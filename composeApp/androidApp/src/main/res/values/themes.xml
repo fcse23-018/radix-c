@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.TerroChroma" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/deep_soil</item>
+        <item name="android:navigationBarColor">@color/deep_soil</item>
+    </style>
+
+    <style name="Theme.TerroChroma.Splash" parent="Theme.TerroChroma">
+        <item name="android:windowBackground">@drawable/splash_screen</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+</resources>

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Exec(Get-ChildItem)",
+      "Exec(mkdir)",
+      "Exec(New-Item)",
+      "Exec(Remove-Item)",
+      "Exec(Move-Item)",
+      "Exec(.\\gradlew.bat)",
+      "Exec(ls)",
+      "Exec(gradle)",
+      "Exec(choco list)"
+    ]
+  }
+}

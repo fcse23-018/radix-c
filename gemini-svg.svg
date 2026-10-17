@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 200" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0C1F16"/>
+      <stop offset="100%" stop-color="#1A3326"/>
+    </linearGradient>
+
+    <!-- Brown bonds -->
+    <linearGradient id="bond" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D4A373"/>
+      <stop offset="100%" stop-color="#A67C52"/>
+    </linearGradient>
+
+    <!-- Green nodes -->
+    <linearGradient id="node" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#95D5B2"/>
+      <stop offset="100%" stop-color="#40916C"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="720" height="200" rx="18" fill="url(#bg)"/>
+
+  <!-- RADIX (bold white) -->
+  <text x="40" y="128" 
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" 
+        font-weight="900" 
+        font-size="96" 
+        fill="#FFFFFF" 
+        letter-spacing="1">
+    RADIX
+  </text>
+
+  <!-- Hyphen -->
+  <text x="445" y="120" 
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" 
+        font-weight="900" 
+        font-size="70" 
+        fill="#D4A373">
+    -
+  </text>
+
+  <!-- Molecular Carbon C (close to the X) -->
+  <g transform="translate(520, 100)">
+
+    <!-- Carbon bonds (brown) -->
+    <path d="M 0 -46 
+             L 40 -23 
+             L 40 23 
+             L 0 46 
+             L -40 23 
+             L -40 -23 
+             Z" 
+          fill="none" 
+          stroke="url(#bond)" 
+          stroke-width="10" 
+          stroke-linejoin="round"/>
+
+    <!-- Cut the right side to form a clear C -->
+    <path d="M 40 -23 L 40 23" 
+          fill="none" 
+          stroke="#0C1F16" 
+          stroke-width="16"/>
+
+    <!-- Carbon atoms (green) -->
+    <circle cx="0"   cy="-46" r="12" fill="url(#node)"/>
+    <circle cx="40"  cy="-23" r="12" fill="url(#node)"/>
+    <circle cx="40"  cy="23"  r="12" fill="url(#node)"/>
+    <circle cx="0"   cy="46"  r="12" fill="url(#node)"/>
+    <circle cx="-40" cy="23"  r="12" fill="url(#node)"/>
+    <circle cx="-40" cy="-23" r="12" fill="url(#node)"/>
+
+    <!-- Center atom -->
+    <circle cx="0" cy="0" r="7" fill="#D4A373"/>
+  </g>
+</svg>
