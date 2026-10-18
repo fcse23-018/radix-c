@@ -23,6 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.terrochroma.shared.config.PreferencesStorage
 import com.terrochroma.shared.ui.theme.LeafGreen
 import com.terrochroma.shared.ui.theme.SoilBrown
 import kotlinx.coroutines.launch
@@ -31,6 +33,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun OnboardingScreen(
     viewModel: OnboardingViewModel = viewModel(),
+    preferencesStorage: PreferencesStorage? = null,
     onComplete: () -> Unit = {}
 ) {
     val currentStep by viewModel.currentStep.collectAsState()
@@ -93,11 +96,40 @@ fun OnboardingScreen(
                     .weight(1f),
                 userScrollEnabled = false
             ) { page ->
-                OnboardingPage(
-                    step = getOnboardingSteps()[page],
-                    stepNumber = page + 1,
-                    totalSteps = totalSteps
-                )
+                val step = getOnboardingSteps()[page]
+                if (step.stepNumber == 5) {
+                    // Consent screen (step 5)
+                    ConsentScreen(
+                        navController = navController,
+                        onAccept = {
+                            viewModel.updateConsentPreferences(viewModel.consentPreferences.value)
+                            viewModel.nextStep()
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(currentStep + 1)
+                            }
+                        },
+                        onDecline = {
+                            // Handle decline - still allow basic usage without optional features
+                            viewModel.updateConsentPreferences(
+                                ConsentPreferences(
+                                    locationEnabled = false,
+                                    analyticsEnabled = false,
+                                    crashReportingEnabled = false
+                                )
+                            )
+                            viewModel.nextStep()
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(currentStep + 1)
+                            }
+                        }
+                    )
+                } else {
+                    OnboardingPage(
+                        step = step,
+                        stepNumber = page + 1,
+                        totalSteps = totalSteps
+                    )
+                }
             }
 
             // Bottom actions

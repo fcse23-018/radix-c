@@ -88,6 +88,11 @@ fun SettingsScreen(navController: NavController) {
                     description = "Sync with ISRIC SoilGrids",
                     onClick = { navController.navigate("sync_settings") }
                 )
+                ClickableSettingItem(
+                    title = "Privacy & Data",
+                    description = "Manage your data and privacy settings",
+                    onClick = { navController.navigate("gdpr_settings") }
+                )
             }
         }
 

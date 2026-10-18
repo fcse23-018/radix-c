@@ -30,6 +30,7 @@ import com.terrochroma.shared.ui.screens.settings.SettingsScreen
 import com.terrochroma.shared.ui.screens.subscription.SubscriptionScreen
 import com.terrochroma.shared.ui.screens.export.ExportScreen
 import com.terrochroma.shared.ui.screens.sync.SyncSettingsScreen
+import com.terrochroma.shared.ui.screens.gdpr.GDPRSettingsScreen
 import com.terrochroma.shared.ui.theme.DeepSoil
 import com.terrochroma.shared.ui.theme.LeafGreen
 import com.terrochroma.shared.ui.theme.SoilBrown
@@ -173,6 +174,9 @@ fun TerroChromaApp() {
             }
             composable("sync_settings") {
                 SyncSettingsScreen(navController)
+            }
+            composable("gdpr_settings") {
+                GDPRSettingsScreen(navController)
             }
         }
     }

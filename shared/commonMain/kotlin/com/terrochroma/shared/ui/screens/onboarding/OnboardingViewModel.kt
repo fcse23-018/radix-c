@@ -2,12 +2,16 @@ package com.terrochroma.shared.ui.screens.onboarding
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.terrochroma.shared.config.ConsentPreferences
+import com.terrochroma.shared.config.PreferencesStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class OnboardingViewModel : ViewModel() {
+class OnboardingViewModel(
+    private val preferencesStorage: PreferencesStorage
+) : ViewModel() {
 
     private val _currentStep = MutableStateFlow(0)
     val currentStep: StateFlow<Int> = _currentStep.asStateFlow()
@@ -15,11 +19,25 @@ class OnboardingViewModel : ViewModel() {
     private val _isCompleted = MutableStateFlow(false)
     val isCompleted: StateFlow<Boolean> = _isCompleted.asStateFlow()
 
+    private val _consentPreferences = MutableStateFlow(ConsentPreferences())
+    val consentPreferences: StateFlow<ConsentPreferences> = _consentPreferences.asStateFlow()
+
     private val steps = getOnboardingSteps()
 
     init {
-        // Check if onboarding was previously completed
-        // In production, this would check encrypted preferences
+        viewModelScope.launch {
+            // Check if onboarding was previously completed
+            val completed = preferencesStorage.isOnboardingCompleted().getOrNull() ?: false
+            if (completed) {
+                _isCompleted.value = true
+            }
+            
+            // Load existing consent preferences
+            val existingConsent = preferencesStorage.getConsentPreferences().getOrNull()
+            if (existingConsent != null) {
+                _consentPreferences.value = existingConsent
+            }
+        }
     }
 
     fun nextStep() {
@@ -40,11 +58,20 @@ class OnboardingViewModel : ViewModel() {
         }
     }
 
+    fun updateConsentPreferences(preferences: ConsentPreferences) {
+        _consentPreferences.value = preferences
+        viewModelScope.launch {
+            saveConsentPreferences(preferences)
+        }
+    }
+
     private fun completeOnboarding() {
         _isCompleted.value = true
-        // In production, save to encrypted preferences
         viewModelScope.launch {
             // Save completion flag
+            preferencesStorage.setOnboardingCompleted()
+            // Save consent preferences
+            saveConsentPreferences(_consentPreferences.value)
         }
     }
 
@@ -54,5 +81,13 @@ class OnboardingViewModel : ViewModel() {
 
     fun getTotalSteps(): Int {
         return steps.size
+    }
+
+    private suspend fun saveConsentPreferences(preferences: ConsentPreferences) {
+        val result = preferencesStorage.saveConsentPreferences(preferences)
+        if (result.isFailure) {
+            // Log error but don't block onboarding
+            // In production, implement proper error handling
+        }
     }
 }

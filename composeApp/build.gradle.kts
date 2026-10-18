@@ -78,6 +78,7 @@ kotlin {
                 implementation("org.tensorflow:tensorflow-lite:2.17.0")
                 implementation("org.tensorflow:tensorflow-lite-gpu:2.17.0")
                 implementation("org.opencv:opencv-android:4.10.0")
+                implementation("androidx.security:security-crypto:1.1.0-alpha06")
                 implementation(project(":shared"))
             }
         }

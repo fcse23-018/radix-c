@@ -51,6 +51,13 @@ fun getOnboardingSteps(): List<OnboardingStep> {
         ),
         OnboardingStep(
             stepNumber = 5,
+            title = "Privacy & Data",
+            description = "We respect your privacy. Choose what data you want to share. Your data is encrypted with AES-256 and never sold to third parties.",
+            illustrationDescription = "Privacy shield with lock icon",
+            actionText = "Review Settings"
+        ),
+        OnboardingStep(
+            stepNumber = 6,
             title = "You're Ready!",
             description = "Your phone is now a soil carbon laboratory. Start measuring and contribute to regenerative agriculture data.",
             illustrationDescription = "Ready state with checkmark",
