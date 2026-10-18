@@ -5,6 +5,9 @@ import com.terrochroma.shared.database.TerroChromaDatabase
 import com.terrochroma.shared.domain.model.SoilSample
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 
 expect class PlatformDatabaseDriverFactory {
     fun createDriver(): SqlDriver
@@ -60,9 +63,9 @@ class DatabaseManager(private val driverFactory: PlatformDatabaseDriverFactory) 
             moistureContent = sample.moistureContent,
             imageHash = sample.imageHash,
             provenanceHash = sample.provenanceHash,
-            cameraParams = kotlinx.serialization.encodeToString(sample.cameraParams),
-            colorFeatures = kotlinx.serialization.encodeToString(sample.colorFeatures),
-            textureFeatures = kotlinx.serialization.encodeToString(sample.textureFeatures),
+            cameraParams = Json.encodeToString(sample.cameraParams),
+            colorFeatures = Json.encodeToString(sample.colorFeatures),
+            textureFeatures = Json.encodeToString(sample.textureFeatures),
             modelVersion = sample.modelVersion,
             appVersion = sample.appVersion,
             isSynced = if (sample.isSynced) 1L else 0L,
@@ -101,9 +104,9 @@ private fun com.terrochroma.shared.SoilSample.toDomainModel(): SoilSample {
         moistureContent = moistureContent,
         imageHash = imageHash,
         provenanceHash = provenanceHash,
-        cameraParams = kotlinx.serialization.decodeFromString(cameraParams),
-        colorFeatures = kotlinx.serialization.decodeFromString(colorFeatures),
-        textureFeatures = kotlinx.serialization.decodeFromString(textureFeatures),
+        cameraParams = Json.decodeFromString(cameraParams),
+        colorFeatures = Json.decodeFromString(colorFeatures),
+        textureFeatures = Json.decodeFromString(textureFeatures),
         modelVersion = modelVersion,
         appVersion = appVersion,
         isSynced = isSynced == 1L,

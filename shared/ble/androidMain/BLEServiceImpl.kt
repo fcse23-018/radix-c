@@ -7,12 +7,11 @@ import androidx.core.content.ContextCompat
 import com.juul.kable.Advertisement
 import com.juul.kable.Scanner
 import com.juul.kable.Peripheral
-import com.juul.kable.ScannerOptions
+import com.juul.kable.ScannerBuilder
 import com.juul.kable.characteristicOf
 import com.juul.kable.connect
 import com.juul.kable.peripheral
 import com.juul.kable.write
-import com.juul.kable.scan
 import com.terrochroma.shared.ble.model.BLEDevice
 import com.terrochroma.shared.ble.model.BLEConnectionState
 import com.terrochroma.shared.ble.model.SpectrumData
@@ -70,17 +69,17 @@ class BLEServiceImpl(private val context: Context) : BLEService {
         return try {
             _connectionState.value = BLEConnectionState.SCANNING
             isScanning = true
-            
+
             val devices = mutableListOf<BLEDevice>()
-            
-            val scanOptions = ScannerOptions {
+
+            scanner = ScannerBuilder {
                 filters = listOf(
                     com.juul.kable.Filter.Service(SPECTROMETER_SERVICE_UUID)
                 )
-            }
-            
-            val advertisements = scan(scanOptions)
-                .map { advertisement ->
+            }.build()
+
+            val advertisements = scanner?.advertisements
+                ?.map { advertisement ->
                     BLEDevice(
                         id = advertisement.identifier,
                         name = advertisement.name ?: "Unknown Device",
@@ -88,16 +87,16 @@ class BLEServiceImpl(private val context: Context) : BLEService {
                         address = advertisement.identifier
                     )
                 }
-            
+
             // Collect for 10 seconds
             kotlinx.coroutines.withTimeoutOrNull(10000) {
-                advertisements.collect { device ->
+                advertisements?.collect { device ->
                     if (!devices.any { it.id == device.id }) {
                         devices.add(device)
                     }
                 }
             }
-            
+
             stopScanning()
             _connectionState.value = BLEConnectionState.DISCONNECTED
             Result.success(devices)

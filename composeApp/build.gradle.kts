@@ -5,7 +5,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.compose")
-    id("app.cash.sqldelight") version "2.0.1"
+    id("app.cash.sqldelight") version "2.0.2"
 }
 
 kotlin {
@@ -38,18 +38,15 @@ kotlin {
                 implementation(compose.material3)
                 implementation(compose.materialIconsExtended)
                 implementation(compose.ui)
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
-                implementation("io.insert-koin:koin-core:3.5.3")
-                implementation("io.insert-koin:koin-compose:3.5.3")
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
-                implementation("io.ktor:ktor-client-core:2.3.7")
-                implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
-                implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+                implementation("io.insert-koin:koin-core:4.0.0")
+                implementation("io.insert-koin:koin-compose:4.0.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+                implementation("io.ktor:ktor-client-core:2.3.12")
+                implementation("io.ktor:ktor-client-content-negotiation:2.3.12")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.12")
                 implementation("com.benasher44:uuid:0.8.4")
-                implementation("dev.icerock.moko:mvvm-core:1.5.0")
-                implementation("dev.icerock.moko:mvvm-compose:1.5.0")
-                implementation("dev.icerock.moko:resources:1.5.0")
                 implementation(project(":shared"))
             }
         }
@@ -64,25 +61,23 @@ kotlin {
 
         val androidMain by getting {
             dependencies {
-                implementation("androidx.activity:activity-compose:1.8.2")
-                implementation("androidx.core:core-ktx:1.12.0")
-                implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-                implementation("androidx.camera:camera-core:1.3.1")
-                implementation("androidx.camera:camera-camera2:1.3.1")
-                implementation("androidx.camera:camera-lifecycle:1.3.1")
-                implementation("androidx.camera:camera-view:1.3.1")
-                implementation("androidx.camera:camera-extensions:1.3.1")
-                implementation("com.google.android.gms:play-services-location:21.1.0")
-                implementation("com.android.billingclient:billing:7.0.0")
-                implementation("com.android.billingclient:billing-ktx:7.0.0")
-                implementation("com.mapbox.mapboxsdk:mapbox-android-sdk:10.0.1")
-                implementation("app.cash.sqldelight:android-driver:2.0.1")
-                implementation("net.sqlcipher:sqlcipher-android:4.5.4")
-                implementation("io.insert-koin:koin-android:3.5.3")
-                implementation("org.tensorflow:tensorflow-lite:2.15.0")
-                implementation("org.tensorflow:tensorflow-lite-gpu:2.15.0")
-                implementation("com.jaredrummler:android-device-names:2.1.1")
-                implementation("org.opencv:opencv-android:4.8.0")
+                implementation("androidx.activity:activity-compose:1.9.3")
+                implementation("androidx.core:core-ktx:1.15.0")
+                implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+                implementation("androidx.camera:camera-core:1.4.1")
+                implementation("androidx.camera:camera-camera2:1.4.1")
+                implementation("androidx.camera:camera-lifecycle:1.4.1")
+                implementation("androidx.camera:camera-view:1.4.1")
+                implementation("androidx.camera:camera-extensions:1.4.1")
+                implementation("com.google.android.gms:play-services-location:21.3.0")
+                implementation("com.android.billingclient:billing:7.1.1")
+                implementation("com.android.billingclient:billing-ktx:7.1.1")
+                implementation("app.cash.sqldelight:android-driver:2.0.2")
+                implementation("net.sqlcipher:sqlcipher-android:4.6.1")
+                implementation("io.insert-koin:koin-android:4.0.0")
+                implementation("org.tensorflow:tensorflow-lite:2.17.0")
+                implementation("org.tensorflow:tensorflow-lite-gpu:2.17.0")
+                implementation("org.opencv:opencv-android:4.10.0")
                 implementation(project(":shared"))
             }
         }
@@ -104,8 +99,8 @@ kotlin {
             iosArm64Main.dependsOn(this)
             iosSimulatorArm64Main.dependsOn(this)
             dependencies {
-                implementation("io.ktor:ktor-client-darwin:2.3.7")
-                implementation("app.cash.sqldelight:native-driver:2.0.1")
+                implementation("io.ktor:ktor-client-darwin:2.3.12")
+                implementation("app.cash.sqldelight:native-driver:2.0.2")
             }
         }
 
@@ -155,7 +150,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.10"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
 
     packaging {
