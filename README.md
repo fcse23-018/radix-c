@@ -1,333 +1,351 @@
-# TerroChroma
-
-**Rapid Optical Soil Carbon Sensing at the Edge**
-
-TerroChroma is a production-ready Kotlin Multiplatform application that turns any modern smartphone into a scientific-grade Soil Organic Carbon (SOC) and Soil Organic Matter (SOM) analyzer. It uses the phone's camera, calibration card detection, on-device ML, and optional BLE NIR spectrometers to deliver laboratory-comparable results in under 2 seconds, fully offline.
-
-## 🌱 Features
-
-- **RAW Camera Capture**: Manual camera parameter locking (ISO, shutter, white balance, focus) with uncompressed RAW capture (DNG on Android, Bayer on iOS)
-- **Calibration Card Detection**: Real-time ArUco/AprilTag detection for illuminant normalization to D65
-- **Color Science**: Conversion to CIE L*a*b*, HSV, Munsell color spaces
-- **Texture Analysis**: GLCM texture features (contrast, homogeneity, energy, entropy)
-- **Moisture Correction**: External Parameter Orthogonalization (EPO) for moisture effects
-- **On-Device ML**: TensorFlow Lite (Android) + Core ML (iOS) inference under 2 seconds
-- **BLE Integration**: Optional connection to MEMS NIR spectrometers (900–2500 nm)
-- **Offline-First**: AES-256 encrypted database with ≥1000 sample cache
-- **Native Billing**: Google Play Billing (Android) + StoreKit 2 (iOS) with subscription tiers
-- **Data Export**: GeoJSON, KML, CSV formats
-- **Cloud Sync**: Optional sync with ISRIC SoilGrids and Earth Engine covariates
-
-## 🎨 Color System
-
-TerroChroma uses a soil-and-vegetation palette:
-
-| Name          | Hex       | Role                          |
-|---------------|-----------|-------------------------------|
-| Deep Soil     | #3E2723   | Primary dark text, icons      |
-| Soil Brown    | #5D4037   | App bars, primary structure   |
-| Mid Soil      | #6D4C41   | Secondary text                |
-| Leaf Green    | #2E7D32   | Primary accent, CTAs, success |
-| Mid Green     | #388E3C   | Selected states               |
-| Olive         | #689F38   | Highlights, badges            |
-| Cream         | #F5F5F0   | Main backgrounds             |
-| Warm Beige    | #EFEBE9   | Cards, bottom sheets          |
-
-## 🏗️ Architecture
-
-TerroChroma follows Clean Architecture with MVI (Model-View-Intent) pattern:
-
-```
-composeApp/
-├── androidApp/              # Android entry point
-├── iosApp/                  # iOS entry point
-└── shared/                  # Shared KMP code
-    ├── core/                # Core utilities
-    ├── database/            # Encrypted SQLDelight database
-    ├── camera/              # Platform-specific camera implementation
-    │   ├── expect/          # Common interface
-    │   ├── androidMain/     # CameraX/Camera2 (RAW/DNG)
-    │   └── iosMain/         # AVFoundation (Bayer RAW)
-    ├── vision/              # Computer vision & color science
-    ├── ml/                  # On-device ML inference
-    │   ├── androidMain/     # TensorFlow Lite
-    │   └── iosMain/         # Core ML
-    ├── billing/             # Native subscription billing
-    │   ├── expect/          # Common interface
-    │   ├── androidMain/     # Google Play Billing
-    │   └── iosMain/         # StoreKit 2
-    ├── sync/                # Cloud synchronization
-    ├── domain/              # Domain models & business logic
-    ├── data/                # Data layer
-    └── ui/                  # Compose Multiplatform screens
-        ├── theme/           # Design system
-        ├── navigation/      # Navigation graph
-        └── screens/          # Screen implementations
-            ├── home/
-            ├── capture/
-            ├── map/
-            ├── library/
-            └── settings/
-```
-
-## 🛠️ Technology Stack
-
-- **Language**: Kotlin 2.0+ (K2 compiler)
-- **UI**: Compose Multiplatform (shared UI for Android + iOS)
-- **Architecture**: Clean Architecture + MVI / Unidirectional Data Flow
-- **Concurrency**: Kotlin Coroutines + StateFlow / SharedFlow
-- **Database**: SQLDelight + SQLCipher (AES-256 encryption at rest)
-- **Networking**: Ktor Client
-- **Dependency Injection**: Koin
-- **Camera**:
-  - Android → CameraX / Camera2 (RAW/DNG support)
-  - iOS → AVFoundation (Bayer RAW)
-- **Computer Vision**: OpenCV (via cinterop / JNI)
-- **On-device ML**: TensorFlow Lite (Android) + Core ML (iOS)
-- **Bluetooth**: Kable (multiplatform BLE) for NIR spectrometers
-- **Maps**: Mapbox (Android) / MapKit (iOS)
-- **Billing**: Native only - Google Play Billing Library 7+ / StoreKit 2
-- **Minimum targets**: Android 10 (API 29) / iOS 16
-
-## 📱 Navigation
-
-Bottom navigation with 5 tabs:
-
-1. **Home** – Dashboard with last sample, stats, recent list
-2. **Capture** (center FAB) – Full guided viewfinder experience
-3. **Map** – Interactive map with SOC color-coded pins
-4. **Library** – Searchable history + bulk export
-5. **Settings** – Full configuration + subscription management
-
-### Capture Wizard Flow
-
-Card Alignment → Stability Check (IMU ≤ 10°) → Light Quality Gate → RAW Capture → Local Inference → Result Bottom Sheet
-
-## 💳 Subscription Tiers
-
-- **Free Tier**: Limited monthly captures (configurable, default 10)
-- **Pro Monthly**: Unlimited captures
-- **Pro Yearly**: Unlimited captures with optional free trial (7 days)
-- **Soft Paywall**: Users experience value before subscription prompt
-- **Restore Purchases**: Support for restoring previous purchases
-- **Manage Subscription**: Deep-link to native store UI
-
-## 🔒 Security
-
-- **AES-256**: All local data encrypted at rest
-- **No Logging**: Sensitive location/image data not logged in production
-- **Certificate Pinning**: For all backend calls
-- **Biometric Lock**: Optional app lock with biometrics
-- **Billing Security**: Follows Play Billing / StoreKit best practices
-- **Provenance Record**: Cryptographic hash for every result (app version + model ID + camera params + hash)
-
-## 🚀 Setup Instructions
-
-### Prerequisites
-
-- **Android Studio**: Hedgehog (2023.1.1) or later
-- **Xcode**: 15.0 or later (for iOS development)
-- **JDK**: 17 or later
-- **Kotlin**: 2.0.0
-- **Gradle**: 8.3.0
-
-### Clone the Repository
-
-```bash
-git clone <repository-url>
-cd RADIX-C
-```
-
-### Android Setup
-
-1. Open the project in Android Studio
-2. Sync Gradle files
-3. Ensure you have the Android SDK installed (API 35 target)
-4. Run the app on an Android device or emulator:
-
-```bash
-./gradlew :composeApp:androidApp:installDebug
-```
-
-### iOS Setup
-
-1. Open `iosApp/iosApp.xcodeproj` in Xcode
-2. Install CocoaPods dependencies:
-
-```bash
-cd iosApp
-pod install
-```
-
-3. Build and run in Xcode or via command line:
-
-```bash
-./gradlew :composeApp:iosApp:assembleDebug
-```
-
-### ML Model Setup
-
-The application expects a TensorFlow Lite model at `androidApp/src/main/assets/soc_model.tflite`.
-
-To replace the ML model:
-
-1. Train your model using the reference documents' methodology
-2. Export to TFLite format
-3. Place in `androidApp/src/main/assets/soc_model.tflite`
-4. For iOS, convert to Core ML using `coremltools` and place in `iosApp/iosApp/`
-
-### Database Encryption
-
-The database uses SQLCipher with AES-256 encryption. The encryption key is currently generated from device ID. For production:
-
-**Android**: Use Android Keystore for secure key storage
-**iOS**: Use Keychain Services for secure key storage
-
-### Billing Setup
-
-**Android**:
-1. Create app in Google Play Console
-2. Configure subscription products:
-   - `pro_monthly`
-   - `pro_yearly`
-3. Add public key to `androidApp/build.gradle.kts`
-
-**iOS**:
-1. Create app in App Store Connect
-2. Configure subscription products:
-   - `pro_monthly`
-   - `pro_yearly`
-3. Configure StoreKit configuration file
-
-## 🧪 Testing
-
-### Unit Tests
-
-```bash
-./gradlew test
-```
-
-### Android Instrumented Tests
-
-```bash
-./gradlew :composeApp:androidApp:connectedAndroidTest
-```
-
-### iOS Tests
-
-```bash
-./gradlew :composeApp:iosApp:testDebugUnitTest
-```
-
-## 📦 Build & Release
-
-### Android Release
-
-```bash
-./gradlew :composeApp:androidApp:assembleRelease
-```
-
-The APK will be at `composeApp/androidApp/build/outputs/apk/release/`
-
-### iOS Release
-
-Build in Xcode with the Archive target, then upload to App Store Connect.
-
-## 📚 Architecture Decisions
-
-### Why Compose Multiplatform?
-
-- Shared UI code reduces development time by ~40%
-- Consistent user experience across platforms
-- Hot reload for faster development
-- Native performance
-
-### Why SQLDelight over Room KMP?
-
-- Better KMP support
-- Type-safe SQL queries
-- Excellent SQLCipher integration
-- Migration support
-
-### Why Native Billing?
-
-- Google Play / Apple App Store policies require native billing
-- Better user experience with native purchase flows
-- Easier subscription management
-- Compliance with store guidelines
-
-### Why TensorFlow Lite + Core ML?
-
-- On-device inference for offline capability
-- <2 second inference time requirement
-- Platform-specific optimizations
-- Established ecosystems
-
-## 🔧 Configuration
-
-### Camera Parameters
-
-Edit `CameraConfig.kt` to adjust default camera settings:
-
-```kotlin
-data class CameraConfig(
-    val iso: Int = 100,
-    val exposureTime: Long = 10000000L, // nanoseconds
-    val whiteBalanceMode: WhiteBalanceMode = WhiteBalanceMode.AUTO,
-    val focusMode: FocusMode = FocusMode.AUTO,
-    val flashMode: FlashMode = FlashMode.OFF,
-    val rawFormat: RawFormat = RawFormat.DNG
-)
-```
-
-### Subscription Limits
-
-Edit `SubscriptionConfig.kt` to adjust subscription parameters:
-
-```kotlin
-data class SubscriptionConfig(
-    val freeMonthlyCaptures: Int = 10,
-    val proMonthlyPrice: String = "$9.99",
-    val proYearlyPrice: String = "$99.99",
-    val proYearlyDiscount: Int = 17,
-    val trialDays: Int = 7
-)
-```
-
-## 📄 License
-
-[Add your license here]
-
-## 🤝 Contributing
-
-[Add contribution guidelines here]
-
-## 📞 Support
-
-For support, email support@terrochroma.com or open an issue in the repository.
-
-## 🎯 Roadmap
-
-- [ ] OpenCV integration for ArUco/AprilTag detection
-- [ ] Complete EPO moisture correction implementation
-- [ ] BLE spectrometer integration with Kable
-- [ ] ISRIC SoilGrids cloud sync
-- [ ] Google Earth Engine covariates
-- [ ] Advanced analytics dashboard
-- [ ] Multi-language support
-- [ ] Accessibility improvements
-
-## 📖 References
-
-Based on the following research:
-
-1. **Smartphone-Based Soil Carbon Measurement Techniques** (full research paper)
-2. **Software Requirements Specification (SRS) & Technical Reference Manual** (SRS-SOC-2026-V1)
-3. **TerroChroma UI & Navigation Design Specification**
-
-These documents are the single source of truth for all functional requirements, color system, navigation, capture flow, sensors, ML pipeline, security rules, and non-functional requirements.
+# SoilCarbon Engine
+
+**Offline-first smartphone soil organic carbon (SOC) analysis**
+
+SoilCarbon Engine is a production-oriented Android application that turns a modern smartphone into a
+field screening instrument for soil organic carbon. It captures a RAW + JPEG image of a soil aperture
+and a printed six-patch calibration card, rectifies the capture, fits a D65 radiometric transfer
+function, extracts the exact feature vector mandated by **SRS-SOC-2026-V1 v2.4.0**, and runs on-device
+TFLite inference with a deterministic heuristic fallback.
+
+> **Research screening only.** Results must be validated against dry combustion (ISO 10694) before
+> regulatory reporting, carbon-credit issuance, or agronomic decisions. The shipped model is an
+> explicitly labelled placeholder.
 
 ---
 
-**Version**: 1.0.0
-**Last Updated**: October 2026
+## Features
+
+- **RAW + JPEG capture** — CameraX `OUTPUT_FORMAT_RAW_JPEG` with Camera2 interop for manual ISO,
+  shutter, focus and white-balance locking.
+- **Calibration card** — OpenCV ArUco IDs 20–23 at the corners plus ID 24 at the top centre, six
+  neutral reflectance patches (99/80/60/40/20/5 %) and a 30 × 30 mm soil aperture.
+- **Live quality gates** — IMU tilt ≤ 10°, minimum illuminance (default 50 lux), target alignment,
+  patch coverage and GPS state are shown in the viewfinder before capture.
+- **Radiometric calibration** — per-channel weighted affine fit over the six patches, with RMSE,
+  worst R² and illumination-variation diagnostics saved per sample.
+- **Colour science** — sRGB linearisation, CIE XYZ/L\*a\*b\*, approximate Munsell notation, HSV and
+  reflectance ratios.
+- **Texture** — GLCM contrast, energy, homogeneity, correlation, entropy and dissimilarity on the
+  rectified aperture.
+- **Moisture correction** — EPO projection from a gravimetric moisture value when supplied.
+- **Exact SRS feature vector**
+  `[L*, a*, b*, Munsell_Value, GLCM_Contrast, GLCM_Energy, NDVI_Sat, Clay_Content]`.
+- **On-device inference** — TFLite with optional GPU delegate and NNAPI/CPU fallback. A heuristic
+  regressor keeps capture working when the model is absent or rejects the input.
+- **SOC/SOM + uncertainty** — SOM = SOC × 1.724, 95 % interval, confidence score and carbon stock
+  (Mg C/ha) from bulk density and depth.
+- **Geospatial fusion** — GPS fix, SoilGrids clay/SOC baseline, Sentinel-2 NDVI and Open-Meteo
+  climate, all cached for offline use with regional defaults as the final fallback.
+- **Encrypted local storage** — Room + SQLCipher (AES-256), Keystore-backed AES-GCM for image files.
+- **Provenance** — SHA-256 over a deterministic scientific payload plus RAW/JPEG digests.
+- **Role-based workspaces** — Field Technician, Agronomist and Data Scientist.
+- **Exports** — CSV, GeoJSON, full JSON bundle and provenance manifest.
+- **No account required** — network access is optional and can be disabled in Settings.
+
+---
+
+## Technology
+
+| Layer | Implementation |
+|---|---|
+| Language | 100 % Kotlin |
+| UI | Jetpack Compose + Material 3, single `MainActivity` |
+| Architecture | Presentation → Domain → Data (Clean Architecture) |
+| DI / async | Hilt, Coroutines, Flow, StateFlow |
+| Persistence | Room 2.6 + SQLCipher 4.6, DataStore Preferences |
+| Camera | CameraX 1.5 + Camera2 interop, RAW/DNG where supported |
+| Vision | OpenCV 4.10 (ArUco, colour conversion, rectification) |
+| ML | TensorFlow Lite 2.16 (GPU delegate optional) |
+| Background | WorkManager + Hilt worker factory |
+| Maps | osmdroid |
+| Networking | Retrofit + OkHttp + Gson, rate-limited clients |
+| Build | AGP 8.7.3, Kotlin 2.0, Gradle 8.9, minSdk 28, targetSdk 35 |
+
+---
+
+## Project structure
+
+```
+app/
+  src/main/java/com/soilcarbon/engine/
+    core/                 Constants, dispatchers, result wrappers
+    domain/               Models, colour science, GLCM, calibration, repositories, use cases
+    data/                 Room/SQLCipher, encrypted files, camera, sensors, vision, remote APIs, sync
+    presentation/         Compose screens, ViewModels, navigation, theme
+  src/main/assets/
+    calibration/          calibration_target.json, printable PNG and SVG
+    models/               soc_model.tflite + soc_model_metadata.json
+  src/test/               JVM unit tests (colour, GLCM, calibration, feature vector, provenance)
+tools/generate_assets.py  Regenerates the card assets and placeholder TFLite model
+```
+
+---
+
+## Build and run
+
+### Prerequisites
+
+- Android Studio Ladybug (2024.2) or newer
+- JDK 17 or newer (JDK 21 is used in CI)
+- Android SDK Platform 35 and Build Tools 35
+- A physical device is strongly recommended: RAW capture, IMU, GNSS and camera2 interop are device
+  dependent and are not representative on an emulator
+
+### Configure the SDK
+
+Create `local.properties` in the repository root (already present in local checkouts):
+
+```properties
+sdk.dir=C\:\\Users\\<you>\\AppData\\Local\\Android\\Sdk
+```
+
+### Build
+
+```bat
+gradlew.bat :app:assembleDebug
+```
+
+The APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
+
+### Install
+
+```bat
+gradlew.bat :app:installDebug
+```
+
+### Unit tests
+
+```bat
+gradlew.bat :app:testDebugUnitTest
+```
+
+The suite covers CIE colour conversion, GLCM normalisation, radiometric affine fitting, feature
+vector ordering/clamping and provenance hashing.
+
+### Release
+
+```bat
+gradlew.bat :app:assembleRelease
+```
+
+Release builds enable R8 and resource shrinking. Provide a signing config before distribution.
+SQLCipher native libraries and the `tflite` asset are kept uncompressed by the packaging rules.
+
+---
+
+## Capture workflow
+
+1. **Onboarding** — choose a role, set bulk density and sampling depth, record GDPR consent.
+2. **Align** — place the card over level soil, fill the frame, avoid shadow across the patches.
+3. **Lock** — open *Camera controls* to set ISO, shutter, focus and white balance; use `RAW + JPEG`.
+4. **Gate** — wait for tilt ≤ 10°, sufficient lux, all five markers and six patches.
+5. **Capture** — the images and sensor/location context are encrypted and written atomically.
+6. **Analyse** — rectify aperture and patches, fit the six-patch transfer function, compute colour,
+   GLCM and covariates, build the feature vector, run inference, hash provenance.
+7. **Review** — inspect every scientific field, export CSV/GeoJSON/JSON or delete the record.
+
+Captures are retained locally by default. Nothing is uploaded unless you export or explicitly enable
+and run covariate sync.
+
+### Role-based navigation
+
+| Role | Tabs |
+|---|---|
+| Field Technician | Capture, Review, Settings |
+| Agronomist | Dashboard, Review, Map, Settings |
+| Data Scientist | Dashboard, Review, Map, Settings |
+
+The role is stored in DataStore and can be changed at any time in Settings.
+
+---
+
+## Calibration card
+
+The printable target is shipped at:
+
+- `app/src/main/assets/calibration/calibration_target.json` — machine-readable geometry
+- `app/src/main/assets/calibration/calibration_target.png` — 304.8 DPI raster (2160 × 1680 px)
+- `app/src/main/assets/calibration/calibration_target.svg` — vector source
+
+Physical specification:
+
+| Item | Value |
+|---|---|
+| Card size | 180 × 140 mm |
+| Corner ArUco markers | IDs 20, 21, 22, 23, 22 mm |
+| Centre ArUco marker | ID 24, 22 mm |
+| Calibration patches | 22 mm, 99 / 80 / 60 / 40 / 20 / 5 % nominal reflectance |
+| Soil aperture | 30 × 30 mm cut-out |
+| Scale check | 100 mm printed bar |
+
+### Printing checklist
+
+1. Print at **100 % scale**; disable “fit to page” and “shrink oversized pages”.
+2. Use matte synthetic stock (Yupo or polycarbonate). Do not use glossy photo paper.
+3. Measure the 100 mm scale bar with calipers; reject the print if it is off by more than 1 mm.
+4. Cut the 30 × 30 mm aperture cleanly. Keep at least one white module of quiet zone around every
+   ArUco marker.
+5. Laminate only with a matte, non-UV-shifting film — gloss creates specular highlights.
+6. Replace the card when patches fade, scratch or become soil-stained.
+7. Capture in diffuse daylight, D65-like conditions. Avoid direct sun, flash, coloured canopies and
+   mixed indoor lighting.
+
+The app validates the card JSON at startup. A missing or malformed asset falls back to the compiled-in
+`CalibrationTargetSpec.default()` geometry; capture is never blocked by an asset problem.
+
+---
+
+## Model asset and training notes
+
+Shipped placeholder:
+
+- `app/src/main/assets/models/soc_model.tflite`
+- `app/src/main/assets/models/soc_model_metadata.json`
+
+The placeholder is a small dense regressor bootstrapped from the in-app heuristic. It is marked
+`"is_placeholder": true`, and the UI/predictions label it accordingly. It exists so the application
+can build, run and exercise the full inference path before a validated regional model is available.
+
+### Model contract
+
+| Property | Requirement |
+|---|---|
+| Input | `float32[1, 8]` |
+| Feature order | `[L*, a*, b*, Munsell_Value, GLCM_Contrast, GLCM_Energy, NDVI_Sat, Clay_Content]` |
+| Input scaling | `(value - feature_means[i]) / feature_scales[i]` |
+| Output | `float32[1, 3]` = `[SOC %, sigma, confidence]` |
+| Output scaling | `SOC = raw[0] * output_scale + output_offset` |
+| σ / confidence | Used when `> 0`; otherwise the metadata fallback is used |
+| Uncertainty floor | The predictor combines learned σ with feature novelty and moisture penalty |
+| Format | Uncompressed float TFLite flatbuffer, > 1 KiB |
+
+The metadata arrays **must** match the training preprocessing. If the order or scaling changes, bump
+`FeatureVector.FEATURE_VECTOR_VERSION`, retrain, and update both the app and the model metadata.
+
+### Recommended training pipeline
+
+1. Collect paired samples: calibrated phone capture + ISO 10694 dry-combustion SOC reference.
+2. Stratify by soil colour, clay class, moisture and region. Keep an untouched hold-out site split.
+3. Extract the eight features with the same code paths used on-device (`ColorScience`,
+   `GlcmAnalyzer`, `FeatureVectorFactory`).
+4. Fit imputation and scaling on the training split only; export the means and scales into
+   `soc_model_metadata.json`.
+5. Train a compact regressor with a physically plausible output range and a calibrated uncertainty
+   head (quantile, heteroscedastic Gaussian, or ensemble σ).
+6. Report RMSE, MAE, R², bias and 95 % interval coverage on the site-held-out test set.
+7. Convert to TFLite and verify the input/output shapes on a device, not only in Python.
+8. Replace `soc_model.tflite`, update the metadata, bump `model_version`, and record the model SHA-256.
+
+### Conversion sketch
+
+```python
+import tensorflow as tf
+
+model = tf.keras.models.load_model("soc_model.keras")
+converter = tf.lite.TFLiteConverter.from_keras_model(model)
+converter.optimizations = []          # keep float32 for the reference path
+tflite_model = converter.convert()
+open("app/src/main/assets/models/soc_model.tflite", "wb").write(tflite_model)
+```
+
+Validate the flatbuffer before shipping:
+
+```python
+import tensorflow as tf
+interpreter = tf.lite.Interpreter(
+    model_path="app/src/main/assets/models/soc_model.tflite"
+)
+interpreter.allocate_tensors()
+print(interpreter.get_input_details()[0]["shape"])   # [1, 8]
+print(interpreter.get_output_details()[0]["shape"])  # [1, 3]
+```
+
+The app never refuses a capture because the model is missing: `TfliteSocPredictor` catches load and
+inference failures and delegates to `HeuristicSocRegressor`. The fallback marks every prediction with
+`fallbackUsed = true` and a warning note.
+
+### Regenerating the placeholder and card assets
+
+```bat
+python tools\generate_assets.py
+```
+
+Requirements: Python 3.10+, `opencv-contrib-python`, `numpy`, `tensorflow >= 2.16`. The script rewrites
+the JSON/PNG/SVG card and the placeholder TFLite model with a fresh SHA-256. Do not use the
+regenerated placeholder for operational decisions.
+
+---
+
+## Data, privacy and security
+
+- **Database** — Room over SQLCipher with a 256-bit passphrase held by `KeystoreSecretStore`.
+- **Images** — AES-256-GCM streaming encryption under `filesDir/secure`, keyed from Android Keystore.
+- **Provenance** — SHA-256 over a canonical payload; RAW and JPEG digests are stored separately.
+- **Backups** — disabled (`allowBackup=false`); data-extraction rules exclude sensitive files.
+- **Network** — covariate requests are rate-limited and optional. Disable *Allow network covariate
+  lookup* for a fully offline workflow. Cached results are used when offline; regional defaults are
+  the final fallback and are flagged in the UI.
+- **Consent** — onboarding records GDPR consent locally; no account or cloud identity is created.
+- **Deletion** — deleting a sample removes its database record and provenance entry. Encrypted files
+  remain in app-private storage until purged by the OS; use Android’s app-storage controls for a full
+  wipe.
+
+Exports are written to the app cache and shared through `FileProvider`. Treat exported CSV/GeoJSON/JSON
+as sensitive: they contain location, images hashes, model identity and soil properties.
+
+---
+
+## Offline behaviour
+
+| Capability | Online | Offline |
+|---|---|---|
+| Capture, calibration, colour, GLCM, inference | ✓ | ✓ |
+| Covariates | SoilGrids / Sentinel / Open-Meteo | Last cache, then regional defaults |
+| Maps | osmdroid tile download | Cached tiles only |
+| Exports | Local files + share sheet | Local files + share sheet |
+| Model update | Manual asset replacement | Existing asset |
+
+The application is offline-first by design: every capture and analysis path must complete without a
+network connection.
+
+---
+
+## Validation and limitations
+
+- The **shipped model is a placeholder** trained on synthetic heuristic targets. Its reported fit is
+  not evidence of field accuracy.
+- Visible-colour SOC prediction is sensitive to moisture, soil roughness, iron oxides, organic
+  matter composition, camera spectral response and illumination. The calibration card corrects
+  intensity and tone response, not the fundamental spectral ambiguity.
+- RAW support, manual sensor controls and Camera2 interop vary by device and OEM. The app records the
+  actual exposure parameters and whether RAW was available; it does not claim RAW on unsupported
+  hardware.
+- Munsell notation is approximate and intended for QC display, not as a replacement for a soil colour
+  chart.
+- GLCM features depend on aperture rectification, focus and texture scale; saturated contrast is
+  flagged by the feature validator.
+- GPS accuracy is recorded, but the app does not guarantee a survey-grade location.
+- Satellite NDVI and SoilGrids values are coarse covariates, not local measurements.
+- Carbon stock uses `SOC% × bulk density × depth` with user-supplied defaults; it is not a
+  volumetric-equivalent stock calculation.
+- Do not use this application for carbon-credit trading, regulatory reporting or laboratory
+  certification without independent validation and a documented quality-management system.
+
+---
+
+## References
+
+1. **Smartphone Soil Carbon SRS & Reference Manual** — `SRS-SOC-2026-V1` v2.4.0 (authoritative
+   requirements).
+2. **Smartphone-Based Soil Carbon Measurement Techniques** — method review.
+3. **TerroChroma UI & Navigation Specification** — capture and navigation guidance.
+
+Supporting repository documents: `COMPUTER_VISION_MODULE.md`, `CLOUD_SYNC_WCS.md`,
+`DATA_EXPORT_MODULE.md`, `MAP_INTEGRATION.md`, `GDPR_COMPLIANCE.md`, `PRIVACY_POLICY.md`.
+
+---
+
+**Version:** 2.4.0  
+**Application ID:** `com.soilcarbon.engine`  
+**Last updated:** November 2026

@@ -1,0 +1,129 @@
+{
+  "version": "SOC-CARD-2026.1",
+  "cardWidthMm": 180.0,
+  "cardHeightMm": 140.0,
+  "markers": [
+    {
+      "id": 20,
+      "role": "TOP_LEFT",
+      "center": {
+        "xMm": 16.0,
+        "yMm": 16.0
+      },
+      "sizeMm": 22.0
+    },
+    {
+      "id": 21,
+      "role": "TOP_RIGHT",
+      "center": {
+        "xMm": 164.0,
+        "yMm": 16.0
+      },
+      "sizeMm": 22.0
+    },
+    {
+      "id": 22,
+      "role": "BOTTOM_RIGHT",
+      "center": {
+        "xMm": 164.0,
+        "yMm": 124.0
+      },
+      "sizeMm": 22.0
+    },
+    {
+      "id": 23,
+      "role": "BOTTOM_LEFT",
+      "center": {
+        "xMm": 16.0,
+        "yMm": 124.0
+      },
+      "sizeMm": 22.0
+    },
+    {
+      "id": 24,
+      "role": "CENTER_ANCHOR",
+      "center": {
+        "xMm": 90.0,
+        "yMm": 16.0
+      },
+      "sizeMm": 22.0
+    }
+  ],
+  "patches": [
+    {
+      "id": "P99",
+      "name": "99% white",
+      "targetReflectance": 0.99,
+      "rect": {
+        "leftMm": 10.0,
+        "topMm": 38.0,
+        "widthMm": 22.0,
+        "heightMm": 22.0
+      }
+    },
+    {
+      "id": "P80",
+      "name": "80% grey",
+      "targetReflectance": 0.8,
+      "rect": {
+        "leftMm": 37.0,
+        "topMm": 38.0,
+        "widthMm": 22.0,
+        "heightMm": 22.0
+      }
+    },
+    {
+      "id": "P60",
+      "name": "60% grey",
+      "targetReflectance": 0.6,
+      "rect": {
+        "leftMm": 64.0,
+        "topMm": 38.0,
+        "widthMm": 22.0,
+        "heightMm": 22.0
+      }
+    },
+    {
+      "id": "P40",
+      "name": "40% grey",
+      "targetReflectance": 0.4,
+      "rect": {
+        "leftMm": 91.0,
+        "topMm": 38.0,
+        "widthMm": 22.0,
+        "heightMm": 22.0
+      }
+    },
+    {
+      "id": "P20",
+      "name": "20% grey",
+      "targetReflectance": 0.2,
+      "rect": {
+        "leftMm": 118.0,
+        "topMm": 38.0,
+        "widthMm": 22.0,
+        "heightMm": 22.0
+      }
+    },
+    {
+      "id": "P05",
+      "name": "5% black",
+      "targetReflectance": 0.05,
+      "rect": {
+        "leftMm": 145.0,
+        "topMm": 38.0,
+        "widthMm": 22.0,
+        "heightMm": 22.0
+      }
+    }
+  ],
+  "aperture": {
+    "leftMm": 75.0,
+    "topMm": 77.0,
+    "widthMm": 30.0,
+    "heightMm": 30.0
+  },
+  "patchSampleInsetFraction": 0.2,
+  "substrate": "Matte synthetic polymer (Yupo/polycarbonate)",
+  "notes": "Print at 100% scale on matte synthetic stock. Verify the 100 mm scale bar after printing. The aperture is a physical cut-out; place the card on a flat, level soil surface."
+}

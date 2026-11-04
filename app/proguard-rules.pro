@@ -1,0 +1,11 @@
+# Keep OpenCV JNI entry points.
+-keep class org.opencv.** { *; }
+-keep class org.tensorflow.lite.** { *; }
+-keep class net.zetetic.database.** { *; }
+-keep class com.soilcarbon.engine.data.local.** { *; }
+-keep class com.soilcarbon.engine.data.remote.dto.** { *; }
+-keepattributes *Annotation*, Signature, InnerClasses, EnclosingMethod
+-dontwarn org.osmdroid.**
+-dontwarn org.opencv.**
+-dontwarn org.tensorflow.**
+-dontwarn net.zetetic.**

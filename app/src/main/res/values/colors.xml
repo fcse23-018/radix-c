@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="soil_deep">#FF2B211B</color>
+    <color name="soil_brown">#FF5D4037</color>
+    <color name="leaf_green">#FF2E7D32</color>
+    <color name="olive">#FF689F38</color>
+    <color name="cream">#FFF5F5F0</color>
+    <color name="warm_beige">#FFEFEBE9</color>
+    <color name="charcoal">#FF1A1D20</color>
+    <color name="launcher_background">#FF122A21</color>
+</resources>

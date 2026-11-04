@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<full-backup-content>
-    <!-- Exclude sensitive user data from backup -->
-    <exclude domain="sharedpref" path="encryption_keys.xml" />
-    <exclude domain="database" path="terrochroma.db" />
-</full-backup-content>

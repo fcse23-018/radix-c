@@ -1,0 +1,1107 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "68c4144dfeacce7fa64b9a3cf632876b",
+    "entities": [
+      {
+        "tableName": "samples",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `tag` TEXT NOT NULL, `notes` TEXT NOT NULL, `role` TEXT NOT NULL, `createdAtMillis` INTEGER NOT NULL, `capturedAtMillis` INTEGER, `status` TEXT NOT NULL, `syncState` TEXT NOT NULL, `latitude` REAL, `longitude` REAL, `altitudeMeters` REAL, `accuracyMeters` REAL, `locationProvider` TEXT, `locationTimestampMillis` INTEGER, `pitchDegrees` REAL, `rollDegrees` REAL, `azimuthDegrees` REAL, `imuTimestampMillis` INTEGER, `lux` REAL, `lightTimestampMillis` INTEGER, `iso` INTEGER, `exposureTimeNs` INTEGER, `focusDistanceDiopters` REAL, `whiteBalanceKelvin` INTEGER, `autoExposureLocked` INTEGER, `autoWhiteBalanceLocked` INTEGER, `autoFocusLocked` INTEGER, `sensorOrientationDegrees` INTEGER, `focalLengthMm` REAL, `rawCaptureAvailable` INTEGER, `rawJpegMode` INTEGER, `jpegQuality` INTEGER, `deviceModel` TEXT, `deviceManufacturer` TEXT, `androidApiLevel` INTEGER, `rawImagePath` TEXT, `jpegImagePath` TEXT, `cardJpegPath` TEXT, `apertureCropPath` TEXT, `rawSha256` TEXT, `jpegSha256` TEXT, `calCardVersion` TEXT, `calSource` TEXT, `calOverallRmse` REAL, `calWorstRSquared` REAL, `calIlluminationVariation` REAL, `calQuality` TEXT, `calRedGain` REAL, `calRedOffset` REAL, `calGreenGain` REAL, `calGreenOffset` REAL, `calBlueGain` REAL, `calBlueOffset` REAL, `calCreatedAtMillis` INTEGER, `labL` REAL, `labA` REAL, `labB` REAL, `hsvHue` REAL, `hsvSaturation` REAL, `hsvValue` REAL, `reflectanceR` REAL, `reflectanceG` REAL, `reflectanceB` REAL, `redOverBlue` REAL, `normalizedDifference` REAL, `rednessIndex` REAL, `brightness` REAL, `samplePixelCount` INTEGER, `excludedPixelFraction` REAL, `munsellHueFamily` TEXT, `munsellHue` REAL, `munsellValue` REAL, `munsellChroma` REAL, `textureContrast` REAL, `textureEnergy` REAL, `textureHomogeneity` REAL, `textureCorrelation` REAL, `textureEntropy` REAL, `textureDissimilarity` REAL, `textureMeanGray` REAL, `textureGrayLevels` INTEGER, `textureOrientations` INTEGER, `textureOffsetPixels` INTEGER, `moisturePercent` REAL, `moistureMethod` TEXT, `moistureConfidence` REAL, `moistureSource` TEXT, `moistureCorrectionNotes` TEXT, `featureL` REAL, `featureA` REAL, `featureB` REAL, `featureMunsellValue` REAL, `featureGlcmContrast` REAL, `featureGlcmEnergy` REAL, `featureNdvi` REAL, `featureClay` REAL, `predictionSoc` REAL, `predictionSom` REAL, `predictionLower95` REAL, `predictionUpper95` REAL, `predictionUncertainty95` REAL, `predictionConfidence` REAL, `predictionStockMgPerHa` REAL, `predictionModelId` TEXT, `predictionModelVersion` TEXT, `predictionInferenceMillis` INTEGER, `predictionFallbackUsed` INTEGER, `predictionNotes` TEXT, `covNdvi` REAL, `covNdviSource` TEXT, `covClay` REAL, `covClaySource` TEXT, `covSocBaseline` REAL, `covSocBaselineSource` TEXT, `covElevation` REAL, `covElevationSource` TEXT, `covPrecip` REAL, `covPrecipSource` TEXT, `covTemp` REAL, `covTempSource` TEXT, `covOfflineFallback` INTEGER, `covFetchedAtMillis` INTEGER, `bulkDensityGcm3` REAL NOT NULL, `depthCm` REAL NOT NULL, `provenanceSha256` TEXT, `modelId` TEXT, `modelVersion` TEXT, `exportedAtMillis` INTEGER, `syncedAtMillis` INTEGER, `errorMessage` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tag",
+            "columnName": "tag",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "role",
+            "columnName": "role",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtMillis",
+            "columnName": "createdAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "capturedAtMillis",
+            "columnName": "capturedAtMillis",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncState",
+            "columnName": "syncState",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "latitude",
+            "columnName": "latitude",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "longitude",
+            "columnName": "longitude",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "altitudeMeters",
+            "columnName": "altitudeMeters",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "accuracyMeters",
+            "columnName": "accuracyMeters",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "locationProvider",
+            "columnName": "locationProvider",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "locationTimestampMillis",
+            "columnName": "locationTimestampMillis",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pitchDegrees",
+            "columnName": "pitchDegrees",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "rollDegrees",
+            "columnName": "rollDegrees",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "azimuthDegrees",
+            "columnName": "azimuthDegrees",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "imuTimestampMillis",
+            "columnName": "imuTimestampMillis",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lux",
+            "columnName": "lux",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lightTimestampMillis",
+            "columnName": "lightTimestampMillis",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "iso",
+            "columnName": "iso",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "exposureTimeNs",
+            "columnName": "exposureTimeNs",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "focusDistanceDiopters",
+            "columnName": "focusDistanceDiopters",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "whiteBalanceKelvin",
+            "columnName": "whiteBalanceKelvin",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "autoExposureLocked",
+            "columnName": "autoExposureLocked",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "autoWhiteBalanceLocked",
+            "columnName": "autoWhiteBalanceLocked",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "autoFocusLocked",
+            "columnName": "autoFocusLocked",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "sensorOrientationDegrees",
+            "columnName": "sensorOrientationDegrees",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "focalLengthMm",
+            "columnName": "focalLengthMm",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "rawCaptureAvailable",
+            "columnName": "rawCaptureAvailable",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "rawJpegMode",
+            "columnName": "rawJpegMode",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "jpegQuality",
+            "columnName": "jpegQuality",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deviceModel",
+            "columnName": "deviceModel",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deviceManufacturer",
+            "columnName": "deviceManufacturer",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "androidApiLevel",
+            "columnName": "androidApiLevel",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "rawImagePath",
+            "columnName": "rawImagePath",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "jpegImagePath",
+            "columnName": "jpegImagePath",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "cardJpegPath",
+            "columnName": "cardJpegPath",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "apertureCropPath",
+            "columnName": "apertureCropPath",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "rawSha256",
+            "columnName": "rawSha256",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "jpegSha256",
+            "columnName": "jpegSha256",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "calCardVersion",
+            "columnName": "calCardVersion",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "calSource",
+            "columnName": "calSource",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "calOverallRmse",
+            "columnName": "calOverallRmse",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "calWorstRSquared",
+            "columnName": "calWorstRSquared",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "calIlluminationVariation",
+            "columnName": "calIlluminationVariation",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "calQuality",
+            "columnName": "calQuality",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "calRedGain",
+            "columnName": "calRedGain",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "calRedOffset",
+            "columnName": "calRedOffset",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "calGreenGain",
+            "columnName": "calGreenGain",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "calGreenOffset",
+            "columnName": "calGreenOffset",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "calBlueGain",
+            "columnName": "calBlueGain",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "calBlueOffset",
+            "columnName": "calBlueOffset",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "calCreatedAtMillis",
+            "columnName": "calCreatedAtMillis",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "labL",
+            "columnName": "labL",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "labA",
+            "columnName": "labA",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "labB",
+            "columnName": "labB",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "hsvHue",
+            "columnName": "hsvHue",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "hsvSaturation",
+            "columnName": "hsvSaturation",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "hsvValue",
+            "columnName": "hsvValue",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "reflectanceR",
+            "columnName": "reflectanceR",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "reflectanceG",
+            "columnName": "reflectanceG",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "reflectanceB",
+            "columnName": "reflectanceB",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "redOverBlue",
+            "columnName": "redOverBlue",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "normalizedDifference",
+            "columnName": "normalizedDifference",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "rednessIndex",
+            "columnName": "rednessIndex",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "brightness",
+            "columnName": "brightness",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "samplePixelCount",
+            "columnName": "samplePixelCount",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "excludedPixelFraction",
+            "columnName": "excludedPixelFraction",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "munsellHueFamily",
+            "columnName": "munsellHueFamily",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "munsellHue",
+            "columnName": "munsellHue",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "munsellValue",
+            "columnName": "munsellValue",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "munsellChroma",
+            "columnName": "munsellChroma",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "textureContrast",
+            "columnName": "textureContrast",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "textureEnergy",
+            "columnName": "textureEnergy",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "textureHomogeneity",
+            "columnName": "textureHomogeneity",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "textureCorrelation",
+            "columnName": "textureCorrelation",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "textureEntropy",
+            "columnName": "textureEntropy",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "textureDissimilarity",
+            "columnName": "textureDissimilarity",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "textureMeanGray",
+            "columnName": "textureMeanGray",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "textureGrayLevels",
+            "columnName": "textureGrayLevels",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "textureOrientations",
+            "columnName": "textureOrientations",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "textureOffsetPixels",
+            "columnName": "textureOffsetPixels",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "moisturePercent",
+            "columnName": "moisturePercent",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "moistureMethod",
+            "columnName": "moistureMethod",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "moistureConfidence",
+            "columnName": "moistureConfidence",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "moistureSource",
+            "columnName": "moistureSource",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "moistureCorrectionNotes",
+            "columnName": "moistureCorrectionNotes",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "featureL",
+            "columnName": "featureL",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "featureA",
+            "columnName": "featureA",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "featureB",
+            "columnName": "featureB",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "featureMunsellValue",
+            "columnName": "featureMunsellValue",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "featureGlcmContrast",
+            "columnName": "featureGlcmContrast",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "featureGlcmEnergy",
+            "columnName": "featureGlcmEnergy",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "featureNdvi",
+            "columnName": "featureNdvi",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "featureClay",
+            "columnName": "featureClay",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "predictionSoc",
+            "columnName": "predictionSoc",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "predictionSom",
+            "columnName": "predictionSom",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "predictionLower95",
+            "columnName": "predictionLower95",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "predictionUpper95",
+            "columnName": "predictionUpper95",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "predictionUncertainty95",
+            "columnName": "predictionUncertainty95",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "predictionConfidence",
+            "columnName": "predictionConfidence",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "predictionStockMgPerHa",
+            "columnName": "predictionStockMgPerHa",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "predictionModelId",
+            "columnName": "predictionModelId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "predictionModelVersion",
+            "columnName": "predictionModelVersion",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "predictionInferenceMillis",
+            "columnName": "predictionInferenceMillis",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "predictionFallbackUsed",
+            "columnName": "predictionFallbackUsed",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "predictionNotes",
+            "columnName": "predictionNotes",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "covNdvi",
+            "columnName": "covNdvi",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "covNdviSource",
+            "columnName": "covNdviSource",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "covClay",
+            "columnName": "covClay",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "covClaySource",
+            "columnName": "covClaySource",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "covSocBaseline",
+            "columnName": "covSocBaseline",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "covSocBaselineSource",
+            "columnName": "covSocBaselineSource",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "covElevation",
+            "columnName": "covElevation",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "covElevationSource",
+            "columnName": "covElevationSource",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "covPrecip",
+            "columnName": "covPrecip",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "covPrecipSource",
+            "columnName": "covPrecipSource",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "covTemp",
+            "columnName": "covTemp",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "covTempSource",
+            "columnName": "covTempSource",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "covOfflineFallback",
+            "columnName": "covOfflineFallback",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "covFetchedAtMillis",
+            "columnName": "covFetchedAtMillis",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "bulkDensityGcm3",
+            "columnName": "bulkDensityGcm3",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "depthCm",
+            "columnName": "depthCm",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "provenanceSha256",
+            "columnName": "provenanceSha256",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "modelId",
+            "columnName": "modelId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "modelVersion",
+            "columnName": "modelVersion",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "exportedAtMillis",
+            "columnName": "exportedAtMillis",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncedAtMillis",
+            "columnName": "syncedAtMillis",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "errorMessage",
+            "columnName": "errorMessage",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_samples_createdAtMillis",
+            "unique": false,
+            "columnNames": [
+              "createdAtMillis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_samples_createdAtMillis` ON `${TABLE_NAME}` (`createdAtMillis`)"
+          },
+          {
+            "name": "index_samples_tag",
+            "unique": false,
+            "columnNames": [
+              "tag"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_samples_tag` ON `${TABLE_NAME}` (`tag`)"
+          },
+          {
+            "name": "index_samples_syncState",
+            "unique": false,
+            "columnNames": [
+              "syncState"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_samples_syncState` ON `${TABLE_NAME}` (`syncState`)"
+          },
+          {
+            "name": "index_samples_status",
+            "unique": false,
+            "columnNames": [
+              "status"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_samples_status` ON `${TABLE_NAME}` (`status`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "calibration_profiles",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `cardVersion` TEXT NOT NULL, `deviceModel` TEXT NOT NULL, `sourceDescription` TEXT NOT NULL, `overallRmse` REAL NOT NULL, `worstRSquared` REAL NOT NULL, `illuminationVariation` REAL NOT NULL, `d65X` REAL NOT NULL, `d65Y` REAL NOT NULL, `d65Z` REAL NOT NULL, `redGain` REAL NOT NULL, `redOffset` REAL NOT NULL, `redRmse` REAL NOT NULL, `redRSquared` REAL NOT NULL, `greenGain` REAL NOT NULL, `greenOffset` REAL NOT NULL, `greenRmse` REAL NOT NULL, `greenRSquared` REAL NOT NULL, `blueGain` REAL NOT NULL, `blueOffset` REAL NOT NULL, `blueRmse` REAL NOT NULL, `blueRSquared` REAL NOT NULL, `patchesJson` TEXT NOT NULL, `sha256` TEXT NOT NULL, `createdAtMillis` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cardVersion",
+            "columnName": "cardVersion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deviceModel",
+            "columnName": "deviceModel",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceDescription",
+            "columnName": "sourceDescription",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "overallRmse",
+            "columnName": "overallRmse",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "worstRSquared",
+            "columnName": "worstRSquared",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "illuminationVariation",
+            "columnName": "illuminationVariation",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "d65X",
+            "columnName": "d65X",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "d65Y",
+            "columnName": "d65Y",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "d65Z",
+            "columnName": "d65Z",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "redGain",
+            "columnName": "redGain",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "redOffset",
+            "columnName": "redOffset",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "redRmse",
+            "columnName": "redRmse",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "redRSquared",
+            "columnName": "redRSquared",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "greenGain",
+            "columnName": "greenGain",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "greenOffset",
+            "columnName": "greenOffset",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "greenRmse",
+            "columnName": "greenRmse",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "greenRSquared",
+            "columnName": "greenRSquared",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "blueGain",
+            "columnName": "blueGain",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "blueOffset",
+            "columnName": "blueOffset",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "blueRmse",
+            "columnName": "blueRmse",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "blueRSquared",
+            "columnName": "blueRSquared",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "patchesJson",
+            "columnName": "patchesJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sha256",
+            "columnName": "sha256",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtMillis",
+            "columnName": "createdAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "covariate_cache",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`cellKey` TEXT NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `ndvi` REAL NOT NULL, `ndviSource` TEXT NOT NULL, `clayPercent` REAL NOT NULL, `claySource` TEXT NOT NULL, `socBaselinePercent` REAL NOT NULL, `socBaselineSource` TEXT NOT NULL, `elevationMeters` REAL, `precipMm` REAL, `tempC` REAL, `fetchedAtMillis` INTEGER NOT NULL, `offlineFallback` INTEGER NOT NULL, PRIMARY KEY(`cellKey`))",
+        "fields": [
+          {
+            "fieldPath": "cellKey",
+            "columnName": "cellKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "latitude",
+            "columnName": "latitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "longitude",
+            "columnName": "longitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ndvi",
+            "columnName": "ndvi",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ndviSource",
+            "columnName": "ndviSource",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "clayPercent",
+            "columnName": "clayPercent",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "claySource",
+            "columnName": "claySource",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "socBaselinePercent",
+            "columnName": "socBaselinePercent",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "socBaselineSource",
+            "columnName": "socBaselineSource",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "elevationMeters",
+            "columnName": "elevationMeters",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "precipMm",
+            "columnName": "precipMm",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "tempC",
+            "columnName": "tempC",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fetchedAtMillis",
+            "columnName": "fetchedAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "offlineFallback",
+            "columnName": "offlineFallback",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "cellKey"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '68c4144dfeacce7fa64b9a3cf632876b')"
+    ]
+  }
+}

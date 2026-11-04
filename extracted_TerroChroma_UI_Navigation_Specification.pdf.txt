@@ -1,0 +1,241 @@
+
+
+===== PAGE 1 =====
+TerroChroma    UI & Navigation Specification
+Page 1
+ TERROCHROMA
+ Interface & Navigation Design Specification
+ Soil-Inspired Color System  Native Subscription Model
+Document ID
+UI-SPEC-TC-2026-V1
+App Name
+TerroChroma – Rapid Optical Soil Carbon Sensing
+Platform
+Kotlin Multiplatform (Android + iOS)
+Monetization
+Native Only (Google Play Billing + StoreKit 2)
+Version
+1.0 | October 2026
+Status
+Ready for Implementation
+This document defines the complete visual language, navigation structure, screen hierarchy, interaction patterns,
+and native subscription integration for the TerroChroma mobile application. The design prioritizes outdoor
+readability, one-handed field use, and a warm soil-and-vegetation color system that reinforces the product’s
+connection to land and regenerative agriculture.
+
+
+===== PAGE 2 =====
+TerroChroma    UI & Navigation Specification
+Page 2
+1. Color System – Soil & Vegetation Palette
+The entire interface is built on a restrained palette of deep soil browns and living greens. These colors evoke
+healthy earth and growing vegetation while providing excellent contrast for outdoor sunlight readability.
+ Color Name
+ Hex
+ Role
+ Usage
+Deep Soil
+#3E2723
+Primary Dark
+Headers, strong text, icons
+Soil Brown
+#5D4037
+Primary Brand
+App bars, primary buttons, nav
+Mid Soil
+#6D4C41
+Secondary
+Secondary text, borders
+Leaf Green
+#2E7D32
+Primary Accent
+Success states, active tabs, CTAs
+Mid Green
+#388E3C
+Interactive
+Selected items, progress
+Olive
+#689F38
+Highlight
+Badges, free-trial tags
+Cream
+#F5F5F0
+Background
+Main screen backgrounds
+Warm Beige
+#EFEBE9
+Surface
+Cards, bottom sheets
+Usage Rules: Primary actions and success states use Leaf Green. Navigation bars and strong structure use Soil
+Brown. Backgrounds stay in the warm cream/beige family to reduce glare. Never use pure white or pure black as
+large surfaces.
+2. Overall Navigation Structure
+Primary navigation uses a persistent bottom bar with four destinations plus a prominent center Floating Action
+Button (FAB) dedicated to the core Capture action. This keeps the most frequent field workflow one tap away at all
+times.
+ Tab
+ Purpose
+ Primary Actions
+Home
+Dashboard, recent samples, quick stats
+View last result, start new capture
+Capture
+(Center FAB)
+Full-screen viewfinder + guided wizard
+Align card → Capture → Infer → Save
+Map
+Interactive field map of all samples
+Filter pins, view details, export selection
+Library
+Full sample history & bulk management
+Search, filter, multi-select export
+Settings
+Preferences, calibration, account, billing
+Manage subscription, models, sync
+Navigation Principles: Bottom bar remains visible on all primary screens. Capture opens as a full-screen modal
+experience. Secondary screens (sample detail, paywall, settings sub-pages) use standard back navigation or
+bottom sheets.
+
+
+===== PAGE 3 =====
+TerroChroma    UI & Navigation Specification
+Page 3
+3. Screen-by-Screen Interface Vision
+3.1 Home / Dashboard
+Warm cream background. Top app bar in Soil Brown with subtle green accent line. Large “Last Sample” card
+shows SOC %, SOM %, confidence interval, and a thumbnail of the processed soil region. A horizontal stats row
+displays samples taken today / this week and average SOC. Below sits a scrollable list of recent sample cards
+(swipeable). The center FAB (Leaf Green) is always present for new capture.
+  Header shows current location context + offline/online indicator
+ Last Sample card uses soft elevation and Warm Beige surface
+ Empty state gently prompts the user to take their first sample
+3.2 Capture – Guided Viewfinder (Core Experience)
+Full-screen camera viewfinder with live overlays. The design is deliberately minimal so the soil and calibration card
+remain the visual focus.
+  Real-time alignment guides highlight ArUco / AprilTag corners on the calibration card
+ Digital spirit-level bubble (IMU-driven) turns green when pitch/roll ≤ 10°
+ Ambient light quality meter warns if lighting is too harsh, dim, or uneven
+ Status chips: “Level OK”, “Light OK”, “Card Detected” appear only when relevant
+ Large circular shutter button (Leaf Green) becomes active only when all gates pass
+ Capture sequence: Card Alignment → Stability Check → RAW Lock → Local Inference → Result
+3.3 Result Overlay / Bottom Sheet
+After inference completes (target < 2 s), a bottom sheet rises with generous spacing:
+  Large SOC % number (primary) and SOM % (secondary)
+ Carbon stock (Mg C/ha) when bulk density is available
+ Confidence / uncertainty band displayed as a clear visual range
+ Thumbnail of the segmented soil ROI + key color metrics (L*, Munsell Value)
+ Primary actions: Save & Tag  Retake  Add Note / Moisture
+ Secondary: Share / Export this sample
+3.4 Map
+Full interactive map using platform map SDKs. Sample pins are color-coded by SOC range using the green–brown
+scale (low carbon = lighter soil brown, high carbon = deeper leaf green). Tapping a pin opens a compact bottom
+sheet with summary metrics and a jump-to-detail action. Filters (date, SOC threshold, sync status) sit in a
+collapsible top bar.
+3.5 Library / History
+Searchable and filterable list (or optional grid) of all samples. Each card shows thumbnail, date/location, SOC
+value, and sync status badge. Multi-select mode enables bulk export (GeoJSON / KML / CSV) or deletion. Detail
+view expands to full metrics, feature vector summary, provenance hash, map snippet, notes, and image gallery.
+3.6 Settings
+Grouped into clear sections: Account & Subscription, Calibration Cards, Models & Regional Overlays, Units &
+Display, Offline Sync & Storage, Hardware Diagnostics (camera lock test, IMU, BLE spectrometer pairing), and
+About / Legal. Subscription management deep-links to the native store subscription screen.
+
+
+===== PAGE 4 =====
+TerroChroma    UI & Navigation Specification
+Page 4
+4. Detailed Capture & Processing Flow
+ Step
+ User Sees
+ System Behavior
+1. Open Capture
+Full-screen viewfinder + overlays
+Lock camera parameters (ISO, shutter, WB). Start
+IMU & light monitoring.
+2. Align Card
+Corner guides + “Move card into
+frame”
+Detect ArUco/AprilTags. Perspective correction
+preview.
+3. Stability Gate
+Spirit level bubble + status chips
+Block shutter if tilt > 10° or light unstable.
+4. Capture
+Shutter animation + brief freeze
+Capture RAW (DNG/Bayer) + JPEG proxy. Tag
+GNSS + IMU metadata.
+5. Processing
+Progress ring + “Analyzing soil…”
+Color calibration → L*a*b*/GLCM → EPO moisture
+correction → on-device ML inference.
+6. Result
+Bottom sheet with SOC / SOM /
+confidence
+Display results. Offer Save, Retake, or Add metadata.
+7. Save
+Confirmation toast + return to
+Home/Map
+Encrypt & store locally. Queue for cloud sync if online.
+5. Native-Only Subscription Model
+Subscriptions are implemented exclusively with platform-native billing systems: Google Play Billing Library on
+Android and StoreKit 2 on iOS. No third-party subscription management platforms are used.
+5.1 Recommended Plan Structure
+ Plan
+ Suggested Price
+ Unlocks
+Free
+$0
+Limited captures per month + basic results
+Pro Monthly
+$9.99 – $14.99
+Unlimited captures, full history, map, exports, priority models
+Pro Yearly
+$79 – $99 (best value)
+Same as Monthly + discount. Optional free trial.
+5.2 Price & Offer Management
+All prices, free trials, introductory offers, and promotional codes are managed directly inside Google Play Console
+and App Store Connect. Changing a price or trial length does not require an app update; the stores push the new
+commercial terms to the billing libraries. The app only needs to query the current product details at runtime.
+5.3 In-App Experience
+  Soft paywall appears after the user has taken a small number of free samples (value-first)
+ Paywall screen uses the same soil-green visual language; clear yearly savings callout
+ “Restore Purchases” button is always visible and easy to find
+ Active subscription status is checked on launch and before gated actions
+ “Manage Subscription” deep-links to the native store subscription management UI
+ Entitlement checks are performed locally after the billing library confirms status
+5.4 Technical Notes (Native Only)
+Android: Use Google Play Billing Library 7+ with a clear ProductDetails → purchase flow and
+acknowledge/consume handling. iOS: Use StoreKit 2 (Product, Transaction, RenewalInfo) with StoreKit Testing in
+Xcode for development. Both platforms require server-side receipt validation for production security; a lightweight
+backend endpoint is still recommended even with a pure native client approach.
+
+
+===== PAGE 5 =====
+TerroChroma    UI & Navigation Specification
+Page 5
+6. Core Design Principles
+ Outdoor First — High contrast, large type, no large pure-white surfaces. Status colors remain distinguishable
+under bright sun.
+ One Primary Action — Every screen has one obvious next step. Capture is always one tap away via the
+center FAB.
+ Error Prevention — Capture is blocked until tilt, light, and card detection are satisfied. Messages are short
+and non-technical.
+ Offline by Default — All core flows work without network. Sync status is visible but never blocking.
+ Progressive Disclosure — Field technicians see a simple path. Agronomists can expand to raw L*a*b*,
+GLCM, model ID, and provenance.
+ Warm & Grounded — Soil browns and living greens reinforce the product’s connection to land. Avoid cold
+greys and pure blacks.
+ Thumb-Friendly — Critical controls sit in the lower half of the screen for comfortable one-handed use in the
+field.
+7. Document Control
+Version
+1.0
+Date
+October 2026
+Author
+Product & Design
+Related Docs
+SRS-SOC-2026-V1  Technical Blueprint
+Status
+Approved for Implementation
+ End of Document — TerroChroma Interface & Navigation Design Specification

@@ -1,0 +1,44 @@
+{
+  "model_id": "soc-visible-color-v1",
+  "model_version": "1.0.0-placeholder",
+  "description": "PLACEHOLDER visible-colour SOC regressor bootstrapped from the in-app heuristic. Replace with a dry-combustion-validated regional model before operational use.",
+  "feature_order": [
+    "L_star",
+    "a_star",
+    "b_star",
+    "munsell_value",
+    "glcm_contrast",
+    "glcm_energy",
+    "ndvi_satellite",
+    "clay_content_percent"
+  ],
+  "training_dataset": "synthetic bootstrap (HeuristicSocRegressor), 6000 samples",
+  "validation_rmse_percent": 0.05,
+  "validation_r2": 1.0,
+  "uncertainty_mode": "learned-sigma",
+  "feature_means": [
+    42.0,
+    6.0,
+    14.0,
+    5.0,
+    0.35,
+    0.25,
+    0.35,
+    25.0
+  ],
+  "feature_scales": [
+    18.0,
+    11.0,
+    14.0,
+    3.0,
+    0.3,
+    0.2,
+    0.25,
+    12.0
+  ],
+  "output_scale": 1.0,
+  "output_offset": 0.0,
+  "is_placeholder": true,
+  "created_at_utc": "2026-11-04T01:07:42Z",
+  "sha256": "6cd762f62cbea0c8e93d910fd56037ee05eb482fa6d7c60b24cdcb9eadb1f176"
+}

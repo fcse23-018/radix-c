@@ -1,0 +1,119 @@
+
+
+===== PAGE 1 =====
+SOFTWARE REQUIREMENTS SPECIFICATION
+Technical Blueprint & Domain Reference: Smartphone Soil Carbon Estimation Engine
+DOCUMENT ID
+SRS-SOC-2026-V1
+TARGET STANDARD
+ISO 10694 / USDA
+VERSION
+2.4.0 (Final)
+CLASSIFICATION
+Technical Reference
+1. Executive Overview & System Scope
+This Software Requirements Specification (SRS) defines the operational, mathematical, and algorithmic
+requirements for the Smartphone-Based Soil Organic Carbon (SOC) System. The platform
+transforms commodity mobile devices into point-of-use optical soil analyzers. By capturing uncompressed
+camera sensor frames alongside a physical calibration target, the system isolates humic chromophore
+absorption in visible light (400–700 nm) and pairs it with spatial environmental covariates to deliver
+rapid, laboratory-grade SOC and SOM estimations.
+2. System Operational Architecture
+Field Acquisition
+• RAW Sensor Lock
+• Target Detection
+• GNSS & IMU Angle
+On-Device Engine
+• D65 Alignment
+• CIE L*a*b* & GLCM
+• TFLite Offline Inference
+Geospatial Sync
+• ISRIC SoilGrids API
+• Sentinel-2 NDVI
+• ERA5 Climate Data
+Outputs & Reports
+• SOC % & SOM Stock
+• GeoJSON / Field Map
+• Uncertainty Bounds
+3. User Roles & System Stakeholders
+USER CLASS PRIMARY OPERATIONALRESPONSIBILITIES SYSTEM INTERFACES USED
+Field Technician Captures soil imagery, aligns opticalcalibration cards, tags spatial locations. Mobile Capture UI, Camera AngleAlignment Guide.
+Agronomist Reviews carbon estimations, sets regionalcalibration overlays, exports reports. Field Dashboard, GeoJSON/CSV DataExporter.
+Data Scientist Trains regional machine learning models,manages cloud spectral databases. Model Deployment Ops, SoilGridsAPI Sync.
+
+===== PAGE 2 =====
+SRS & Technical Manual: Soil Carbon System Page 1 of 4
+4. Functional Requirements Specification
+The software system must enforce hardware control, real-time image analytics, spatial metadata
+acquisition, and machine learning inference according to the functional modules specified below.
+Module 1: Optical Capture & Hardware Control
+FR-1.1 (Camera Parameter Lock): The system shall programmatically lock ISO, shutter speed, manual
+focus distance, and turn off hardware auto-white-balance.
+FR-1.2 (Bayer RAW Capture): The mobile application shall store uncompressed RAW (Android DNG or
+iOS Bayer RAW) sensor frames directly alongside compressed JPEG assets.
+FR-1.3 (Inclinometer Gate): Image acquisition shall be inhibited if IMU pitch/roll sensors measure an
+off-axis tilt angle exceeding 10° from normal.
+5. Hardware Sensors & Software API Matrix
+COMPONENT TYPE TECHNICAL FUNCTION API INTEGRATION
+CMOS Camera Hardware Sensor Captures chromophore reﬂection& soil aggregate texture. Camera2 / AVFoundation
+GNSS / GPS Hardware Sensor Tag sample coordinates, elevation,and location accuracy. LocationServices /CoreLocation
+IMU Motion Hardware Sensor Validates perpendicular camerageometry (90° target alignment). SensorManager /CoreMotion
+BLE Spectrometer External Device Captures NIR molecular overtones(900–2500 nm). Android Bluetooth LE API
+Earth Engine API Cloud Service Fetches satellite vegetation index(NDVI) & surface climate. REST / Google EarthEngine
+6. Non-Functional System Requirements
+NFR-1 (Inference Latency): On-device Machine Learning inference (SOC % prediction from a single captured
+sample) shall execute in less than 2.0 seconds on mid-tier mobile hardware.
+NFR-2 (Offline Cache Capacity): The mobile app shall securely cache up to 1,000 un-synced field samples
+locally in an encrypted database (SQLite/Room) during extended offline field operations.
+NFR-3 (Data Cryptography): All local database entries, GPS tags, and raw image matrices must be encrypted
+at rest using AES-256 standard encryption.
+NFR-4 (Provenance Integrity): Every generated SOC prediction must attach a cryptographic hash of the raw
+image, camera exposure parameters, and model identifier for auditability.
+
+===== PAGE 3 =====
+SRS & Technical Manual: Soil Carbon System Page 2 of 4
+7. Domain Science & Soil Physics Fundamentals
+Soil Organic Carbon (SOC) is the primary component of Soil Organic Matter (SOM). Organic humic
+fractions (humic and fulvic acids) act as dark chromophores in visible spectrum wavelengths. As SOC
+concentration increases, total spectral reflectance decreases sharply in the 400–700 nm range.
+Universal Carbon Conversion Standard (Van Bemmelen Factor):
+SOM (%) = SOC (%) × 1.724
+Where SOC represents elemental organic carbon determined via dry combustion (ISO 10694).
+8. Optical Calibration Target Specifications
+ArUco ID: 24
+99% R 80% R 60% R 40% R 20% R 5% R
+SOIL SAMPLE APERTURE
+(30mm × 30mm Cutout Area)
+Card Substrate: Matte non-reflective synthetic polymer substrate (Yupo paper/polycarbonate); resistant to
+moisture, soil slurry, and UV degradation.
+Fiducial Tracking: Four corner ArUco/AprilTag matrices enable real-time sub-pixel perspective correction,
+distance estimation, and rotation alignment.
+Illuminant Normalization: The 6-patch diffuse grayscale array provides known reflectance baselines (99%
+down to 5%) to map raw image pixels to CIE D65 illuminant space.
+
+===== PAGE 4 =====
+SRS & Technical Manual: Soil Carbon System Page 3 of 4
+9. Data Pipeline & Machine Learning Strategy
+The analytical core utilizes a multi-stage feature extraction engine. Device-independent CIE L*a*b*
+coordinates isolate lightness (L*) as the primary SOC proxy. Texture features are extracted using Gray-
+Level Co-occurrence Matrices (GLCM), while External Parameter Orthogonalization (EPO) mitigates soil
+moisture interference.
+Feature Vector Engineering Array:
+Vector X = [ L*, a*, b*, Munsell_Value, GLCM_Contrast, GLCM_Energy, NDVI_Sat,
+Clay_Content ]
+10. Reference Databases & Benchmarks
+DATASET / STANDARD SOURCE ORGANIZATION COVERAGE & ANALYTICAL UTILITY
+LUCAS Soil Library European Commission (ESDAC) 20,000+ topsoil samples across Europe withmeasured SOC and spectra (400–2500 nm).
+KSSL Soil Database USDA-NRCS (United States) National pedon registry with laboratory drycombustion and MIR/VNIR diﬀuse reﬂectance.
+ISO 10694 International Standards Org Gold standard elemental dry combustionbaseline for laboratory validation models.
+11. Academic Foundation & Primary Citations
+1. Viscarra Rossel, R. A., et al. (2016). A global spectral library in the visible near-infrared and mid-infrared regions.
+Earth-Science Reviews, 155, 35–67.
+2. Stiglitz, R., et al. (2017). Estimation of soil organic carbon and total nitrogen using color digital imaging. Geoderma, 286,
+12–23.
+3. Aitkenhead, M. J., et al. (2013). Smart phone app for estimation of soil properties from digital images. Computers and
+Electronics in Agriculture, 97, 66–74.
+Approved By: Lead Systems Architect Date: October 2026 Status: READY FOR IMPLEMENTATION
+
+===== PAGE 5 =====
+SRS & Technical Manual: Soil Carbon System Page 4 of 4

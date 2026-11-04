@@ -1,81 +1,11 @@
-# Gradle
-.gradle/
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-# Android
-*.apk
-*.ap_
-*.aab
-*.dex
-*.class
+.gradle
+build
+/app/build
 local.properties
+*.iml
+.idea
+captures
 .externalNativeBuild
-.cxx/
+.cxx
 *.jks
 *.keystore
-
-# Kotlin
-*.kotlin_module
-*.kotlin_metadata
-
-# IDE
-.idea/
-.vscode/
-*.iml
-*.ipr
-*.iws
-.DS_Store
-
-# Build logs
-*.log
-
-# Local configuration
-.env
-local.properties
-
-# PDF files (reference documents)
-*.pdf
-
-# Android
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build/
-.caches/
-captures/
-.externalNativeBuild
-.externalNativeBuild/
-.cxx/
-local.properties
-
-# Compose
-.compose/
-
-# Package Files
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
-
-# OS
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# Misc
-*.swp
-*.swo
-*~
