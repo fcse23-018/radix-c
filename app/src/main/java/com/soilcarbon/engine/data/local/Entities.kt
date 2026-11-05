@@ -132,6 +132,9 @@ data class SampleEntity(
     val predictionInferenceMillis: Long?,
     val predictionFallbackUsed: Boolean?,
     val predictionNotes: String?,
+    val predictionStatus: String?,
+    val predictionDegraded: Boolean?,
+    val predictionProvenanceJson: String?,
 
     val covNdvi: Double?,
     val covNdviSource: String?,

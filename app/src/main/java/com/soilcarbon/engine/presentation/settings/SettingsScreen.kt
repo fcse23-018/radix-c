@@ -40,6 +40,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -120,6 +122,12 @@ fun SettingsScreen(
                 onRefreshModel = viewModel::refreshModel,
                 loadingModel = state.loadingModel,
                 modelInfo = state.modelInfo
+            )
+        }
+        item {
+            SentinelTokenCard(
+                currentToken = settings.sentinelToken,
+                onSave = viewModel::setSentinelToken
             )
         }
         item {
@@ -341,7 +349,23 @@ private fun NetworkModelCard(
             Text("Model metadata not loaded.", style = MaterialTheme.typography.bodySmall)
         } else {
             InfoRow("Identifier", "${model.modelId} @ ${model.modelVersion}")
-            InfoRow("Status", if (modelInfo.loaded) "TFLite asset loaded" else "Heuristic fallback", emphasize = true)
+            InfoRow(
+                "Status",
+                when {
+                    !modelInfo.loaded -> "Model unavailable"
+                    model.isPlaceholder -> "PLACEHOLDER — demonstration only"
+                    else -> "Validated model"
+                },
+                emphasize = true
+            )
+            InfoRow(
+                "Report mode",
+                if (model.isPlaceholder) {
+                    "DEMO – NOT VALID (debug) · blocked (release)"
+                } else {
+                    "Valid"
+                }
+            )
             InfoRow("Validation RMSE", formatPercent(model.validationRmsePercent))
             InfoRow("Validation R²", formatNumber(model.validationR2, 3))
             InfoRow("Uncertainty", model.uncertaintyMode)
@@ -355,6 +379,51 @@ private fun NetworkModelCard(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun SentinelTokenCard(currentToken: String, onSave: (String) -> Unit) {
+    var token by rememberSaveable(currentToken) { mutableStateOf(currentToken) }
+    var visible by rememberSaveable { mutableStateOf(false) }
+
+    SettingsCard(icon = Icons.Outlined.CloudSync, title = "Sentinel Hub token") {
+        Text(
+            "Used for Sentinel-2 NDVI lookups. Without a token the app supplies the documented " +
+                "NDVI DEFAULT and marks every affected result as degraded.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(8.dp))
+        OutlinedTextField(
+            value = token,
+            onValueChange = { token = it },
+            label = { Text("Sentinel Hub access token") },
+            placeholder = { Text("Paste token") },
+            singleLine = true,
+            visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(6.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = { onSave(token) }, enabled = token != currentToken) {
+                Text("Save token")
+            }
+            OutlinedButton(
+                onClick = {
+                    token = ""
+                    onSave("")
+                },
+                enabled = currentToken.isNotBlank()
+            ) { Text("Clear") }
+            TextButton(onClick = { visible = !visible }) {
+                Text(if (visible) "Hide" else "Show")
+            }
+        }
+        InfoRow(
+            "NDVI source",
+            if (currentToken.isBlank()) "DEFAULT — results marked degraded" else "Sentinel-2 (live)"
+        )
     }
 }
 

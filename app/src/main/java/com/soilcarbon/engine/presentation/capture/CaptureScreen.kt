@@ -321,13 +321,39 @@ fun CaptureScreen(
             }
 
             state.message?.let { message ->
+                val demo = state.lastSample?.prediction?.isDemo == true
                 Card(
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                        containerColor = if (demo) {
+                            MaterialTheme.colorScheme.errorContainer
+                        } else {
+                            MaterialTheme.colorScheme.primaryContainer
+                        }
                     )
                 ) {
                     Column(Modifier.padding(12.dp)) {
-                        Text(message, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        if (demo) {
+                            Text(
+                                "DEMO – NOT VALID",
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        if (state.lastSample?.prediction?.degraded == true) {
+                            Text(
+                                "DEGRADED: at least one model input used a default value.",
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        Text(
+                            message,
+                            color = if (demo) {
+                                MaterialTheme.colorScheme.onErrorContainer
+                            } else {
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            }
+                        )
                         TextButton(onClick = onOpenReview) { Text("Open review") }
                     }
                 }

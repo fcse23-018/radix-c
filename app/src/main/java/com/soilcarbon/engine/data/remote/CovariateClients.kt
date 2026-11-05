@@ -98,13 +98,12 @@ class OpenMeteoClient(
 
 class SentinelNdviClient(
     private val api: SentinelStatisticsApi,
-    private val token: String,
+    private val tokenProvider: suspend () -> String,
     private val rateLimiter: RateLimiter = RateLimiter(2_000)
 ) {
-    val isConfigured: Boolean get() = token.isNotBlank()
-
     suspend fun fetch(point: GeoPoint): NdviSnapshot? {
-        if (!isConfigured) return null
+        val token = tokenProvider().trim()
+        if (token.isBlank()) return null
         rateLimiter.acquire()
         val delta = 0.0012
         val end = LocalDate.now().minusDays(3)

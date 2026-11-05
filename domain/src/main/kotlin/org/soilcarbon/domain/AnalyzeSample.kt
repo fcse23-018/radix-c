@@ -1,9 +1,22 @@
 package org.soilcarbon.domain
 
+/** Optional numbers a model can report about the inference it just ran. */
+data class InferenceDiagnostics(
+    val uncertainty95: Double? = null,
+    val confidence: Double? = null,
+    val inferenceMillis: Long = 0,
+)
+
 /** Port: implemented by the TFLite adapter in the Android module, and by fakes in tests. */
 interface SocModel {
     val metadata: ModelMetadata
     fun predict(features: FloatArray): Float
+
+    /**
+     * Diagnostics for the most recent [predict] call. Implementations that have no extra output
+     * return null and the caller falls back to the validation metrics in [metadata].
+     */
+    fun diagnostics(): InferenceDiagnostics? = null
 }
 
 enum class PlaceholderPolicy { BLOCK, ALLOW_DEMO }
@@ -16,6 +29,9 @@ data class Prediction(
     val status: ReportStatus,
     val provenance: Map<String, FeatureSource>,
     val defaulted: List<String>,
+    val uncertainty95: Double? = null,
+    val confidence: Double? = null,
+    val inferenceMillis: Long = 0,
 ) {
     /** True when any input was a default rather than a real value. */
     val degraded: Boolean get() = defaulted.isNotEmpty()
@@ -53,6 +69,7 @@ class AnalyzeSample(
         val raw = model.predict(validated.values.toFloatArray())
         if (!raw.isFinite() || raw < meta.targetMin || raw > meta.targetMax)
             return AnalysisResult.Rejected(RejectReason.BadModelOutput(raw))
+        val diagnostics = model.diagnostics()
 
         return AnalysisResult.Success(
             Prediction(
@@ -62,6 +79,9 @@ class AnalyzeSample(
                 status = if (meta.isPlaceholder) ReportStatus.DEMO_NOT_VALID else ReportStatus.VALID,
                 provenance = validated.provenance,
                 defaulted = validated.defaulted,
+                uncertainty95 = diagnostics?.uncertainty95,
+                confidence = diagnostics?.confidence,
+                inferenceMillis = diagnostics?.inferenceMillis ?: 0,
             )
         )
     }

@@ -98,7 +98,13 @@ data class Prediction(
     val modelVersion: String,
     val inferenceMillis: Long,
     val fallbackUsed: Boolean = false,
-    val notes: String = ""
+    val notes: String = "",
+    /** "VALID" or "DEMO_NOT_VALID" from the domain reporting status. */
+    val reportStatus: String = STATUS_VALID,
+    /** True when at least one model input was a DEFAULT rather than a measurement. */
+    val degraded: Boolean = false,
+    /** Per-feature provenance: feature name -> MEASURED / USER_ENTERED / DEFAULT. */
+    val provenance: Map<String, String> = emptyMap()
 ) {
     init {
         require(socPercent >= 0.0) { "SOC cannot be negative" }
@@ -106,7 +112,11 @@ data class Prediction(
         require(socLower95 <= socPercent && socPercent <= socUpper95)
     }
 
+    val isDemo: Boolean get() = reportStatus == STATUS_DEMO_NOT_VALID
+
     companion object {
         const val VAN_BEMMELEN_FACTOR = Constants.VAN_BEMMELEN_FACTOR
+        const val STATUS_VALID = "VALID"
+        const val STATUS_DEMO_NOT_VALID = "DEMO_NOT_VALID"
     }
 }

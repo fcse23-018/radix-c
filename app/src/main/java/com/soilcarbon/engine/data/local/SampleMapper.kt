@@ -24,10 +24,22 @@ import com.soilcarbon.engine.domain.vision.MunsellColor
 import com.soilcarbon.engine.domain.vision.ReflectanceRatios
 import com.soilcarbon.engine.domain.vision.ReflectanceRgb
 import com.soilcarbon.engine.domain.vision.TextureFeatures
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlin.math.max
 import kotlin.math.min
 
 object SampleMapper {
+
+    private val gson = Gson()
+    private val provenanceType = object : TypeToken<Map<String, String>>() {}.type
+
+    private fun encodeProvenance(value: Map<String, String>?): String? =
+        value?.takeIf { it.isNotEmpty() }?.let { gson.toJson(it) }
+
+    private fun decodeProvenance(raw: String?): Map<String, String> =
+        runCatching { gson.fromJson<Map<String, String>>(raw, provenanceType) }
+            .getOrNull() ?: emptyMap()
 
     fun toEntity(sample: SoilSample): SampleEntity {
         val color = sample.color
@@ -145,6 +157,9 @@ object SampleMapper {
             predictionInferenceMillis = prediction?.inferenceMillis,
             predictionFallbackUsed = prediction?.fallbackUsed,
             predictionNotes = prediction?.notes,
+            predictionStatus = prediction?.reportStatus,
+            predictionDegraded = prediction?.degraded,
+            predictionProvenanceJson = encodeProvenance(prediction?.provenance),
             covNdvi = covariates?.ndvi?.value,
             covNdviSource = covariates?.ndvi?.source?.name,
             covClay = covariates?.clayPercent?.value,
@@ -300,7 +315,15 @@ object SampleMapper {
                 modelVersion = entity.predictionModelVersion ?: entity.modelVersion ?: "unknown",
                 inferenceMillis = entity.predictionInferenceMillis ?: 0L,
                 fallbackUsed = entity.predictionFallbackUsed ?: true,
-                notes = entity.predictionNotes ?: ""
+                notes = entity.predictionNotes ?: "",
+                reportStatus = entity.predictionStatus
+                    ?: if (entity.predictionFallbackUsed == true) {
+                        Prediction.STATUS_DEMO_NOT_VALID
+                    } else {
+                        Prediction.STATUS_VALID
+                    },
+                degraded = entity.predictionDegraded ?: false,
+                provenance = decodeProvenance(entity.predictionProvenanceJson)
             )
         } else null
 

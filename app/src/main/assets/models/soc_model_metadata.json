@@ -1,7 +1,8 @@
 {
-  "model_id": "soc-visible-color-v1",
-  "model_version": "1.0.0-placeholder",
-  "description": "PLACEHOLDER visible-colour SOC regressor bootstrapped from the in-app heuristic. Replace with a dry-combustion-validated regional model before operational use.",
+  "model_id": "soc-synthetic-demo",
+  "model_version": "0.1.0",
+  "spec_version": "1.0.0",
+  "description": "PLACEHOLDER synthetic regressor trained by training/train_soc.py --synthetic. Debug builds mark its output DEMO – NOT VALID; release builds refuse to report it. Replace with a dry-combustion-validated regional model before operational use.",
   "feature_order": [
     "L_star",
     "a_star",
@@ -12,33 +13,40 @@
     "ndvi_satellite",
     "clay_content_percent"
   ],
-  "training_dataset": "synthetic bootstrap (HeuristicSocRegressor), 6000 samples",
-  "validation_rmse_percent": 0.05,
-  "validation_r2": 1.0,
-  "uncertainty_mode": "learned-sigma",
-  "feature_means": [
-    42.0,
-    6.0,
-    14.0,
-    5.0,
-    0.35,
-    0.25,
-    0.35,
-    25.0
+  "is_placeholder": true,
+  "fallback_features_trained": [
+    "ndvi_satellite"
   ],
-  "feature_scales": [
-    18.0,
-    11.0,
-    14.0,
-    3.0,
-    0.3,
-    0.2,
-    0.25,
-    12.0
-  ],
+  "target": {
+    "name": "soc",
+    "unit": "% dry mass",
+    "min": 0.0,
+    "max": 20.0
+  },
+  "training": {
+    "data_sha256": "d1e827d783d1683e7adcf0b6ab6c44e1398b7b31f1906b369fd119f35941bff5",
+    "n_samples": 480,
+    "n_sites": 12,
+    "created_utc": "2026-11-05T14:00:37+00:00",
+    "lab_method": "SYNTHETIC"
+  },
+  "validation": {
+    "scheme": "group-k-fold by site",
+    "r2": 0.8333965275365949,
+    "rmse": 0.4305045088234471,
+    "rpd": 2.452510285714834,
+    "bias": 0.026442206500055222,
+    "passed": false,
+    "thresholds": {
+      "min_r2": 0.5,
+      "min_rpd": 1.5,
+      "min_sites": 5,
+      "max_abs_bias": 0.15
+    }
+  },
+  "feature_means": [42.0, 6.0, 14.0, 5.0, 0.35, 0.25, 0.35, 25.0],
+  "feature_scales": [18.0, 11.0, 14.0, 3.0, 0.30, 0.20, 0.25, 12.0],
   "output_scale": 1.0,
   "output_offset": 0.0,
-  "is_placeholder": true,
-  "created_at_utc": "2026-11-04T01:07:42Z",
-  "sha256": "6cd762f62cbea0c8e93d910fd56037ee05eb482fa6d7c60b24cdcb9eadb1f176"
+  "uncertainty_mode": "fixed-sigma"
 }

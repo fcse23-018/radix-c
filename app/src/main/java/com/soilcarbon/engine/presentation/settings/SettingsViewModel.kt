@@ -111,6 +111,21 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun setSentinelToken(token: String) {
+        viewModelScope.launch {
+            settingsRepository.setSentinelToken(token)
+            _state.update {
+                it.copy(
+                    message = if (token.isBlank()) {
+                        "Sentinel token cleared. Satellite NDVI will be a DEFAULT value and results flagged degraded."
+                    } else {
+                        "Sentinel token saved. NDVI will be fetched for new captures."
+                    }
+                )
+            }
+        }
+    }
+
     fun refreshModel() {
         if (_state.value.loadingModel) return
         _state.update { it.copy(loadingModel = true) }

@@ -199,7 +199,12 @@ private fun SampleCard(sample: SoilSample, onClick: () -> Unit) {
                         enabled = false,
                         label = {
                             Text(
-                                if (sample.prediction?.fallbackUsed == true) "Heuristic" else "TFLite",
+                                when {
+                                    sample.prediction == null -> "Not analysed"
+                                    sample.prediction.isDemo -> "DEMO – NOT VALID"
+                                    sample.prediction.degraded -> "Degraded"
+                                    else -> "Valid"
+                                },
                                 style = MaterialTheme.typography.labelSmall
                             )
                         }
@@ -277,10 +282,32 @@ private fun SampleDetail(
         if (message != null || error != null) {
             item { Banner(text = error ?: message.orEmpty(), error = error != null, onDismiss = {}) }
         }
+        if (sample.prediction?.isDemo == true) {
+            item {
+                StatusCard(
+                    title = "DEMO – NOT VALID",
+                    body = "This release is running a placeholder model. The number below must not be " +
+                        "used for reporting, accounting or land-management decisions."
+                )
+            }
+        }
+        if (sample.prediction?.degraded == true) {
+            item {
+                StatusCard(
+                    title = "DEGRADED",
+                    body = "At least one model input was a default rather than a measurement " +
+                        "(most often satellite NDVI without a Sentinel token). Check provenance below."
+                )
+            }
+        }
         item {
             Card(
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                    containerColor = if (sample.prediction?.isDemo == true) {
+                        MaterialTheme.colorScheme.errorContainer
+                    } else {
+                        MaterialTheme.colorScheme.primaryContainer
+                    }
                 )
             ) {
                 Row(
@@ -310,9 +337,11 @@ private fun SampleDetail(
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
                 Column(Modifier.padding(14.dp)) {
                     InfoRow("Confidence", sample.prediction?.let { "%.1f%%".format(Locale.US, it.confidenceScore * 100) } ?: "—", emphasize = true)
+                    InfoRow("Report status", sample.prediction?.reportStatus ?: "—")
+                    InfoRow("Degraded", if (sample.prediction?.degraded == true) "Yes — defaulted inputs" else "No")
                     InfoRow("Carbon stock", sample.prediction?.carbonStockMgPerHa?.let { "%.1f Mg C/ha".format(Locale.US, it) } ?: "—")
                     InfoRow("Model", sample.prediction?.let { "${it.modelId} @ ${it.modelVersion}" } ?: "—")
-                    InfoRow("Fallback", if (sample.prediction?.fallbackUsed == true) "Yes — research screening only" else "No")
+                    InfoRow("Demo only", if (sample.prediction?.isDemo == true) "Yes — not a valid estimate" else "No")
                     InfoRow("Inference", sample.prediction?.let { "${it.inferenceMillis} ms" } ?: "—")
                     if (!sample.prediction?.notes.isNullOrBlank()) {
                         Text(
@@ -349,6 +378,13 @@ private fun SampleDetail(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                if (sample.prediction?.provenance?.isNotEmpty() == true) {
+                    Spacer(Modifier.height(8.dp))
+                    Text("Input provenance", style = MaterialTheme.typography.labelMedium)
+                    sample.prediction.provenance.forEach { (feature, source) ->
+                        InfoRow(feature, source, emphasize = source == "DEFAULT")
+                    }
+                }
             }
         }
         item {
@@ -457,6 +493,26 @@ private fun DetailSection(title: String, content: @Composable () -> Unit) {
             Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(6.dp))
             content()
+        }
+    }
+}
+
+@Composable
+private fun StatusCard(title: String, body: String) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+    ) {
+        Column(Modifier.padding(12.dp)) {
+            Text(
+                title,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                body,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.soilcarbon.engine.data.ml
 
 import android.content.Context
-import com.soilcarbon.engine.BuildConfig
 import com.soilcarbon.engine.core.Dispatchers
 import com.soilcarbon.engine.domain.model.ModelInfo
 import com.soilcarbon.engine.domain.model.ModelMetadata
@@ -15,23 +14,34 @@ class DefaultModelRepository @Inject constructor(
 ) : ModelRepository {
 
     override suspend fun loadModel(): ModelInfo = withContext(Dispatchers.io) {
-        val metadata = ModelMetadataLoader.load(context)
-        val sha = ModelMetadataLoader.sha256(context)
-        val size = runCatching {
-            context.assets.open(BuildConfig.MODEL_ASSET).use { it.available().toLong() }
-        }.getOrDefault(0L)
+        val sha = ModelAssets.sha256(context)
+        val size = ModelAssets.sizeBytes(context)
+        val metadata = runCatching { ModelAssets.metadata(context) }.getOrNull()
+        if (metadata == null || sha.isBlank()) {
+            val fallback = ModelMetadata.fallback()
+            return@withContext ModelInfo(
+                metadata = fallback,
+                sha256 = sha,
+                bytes = size,
+                loaded = false,
+                fallbackReason = "Model asset or sidecar missing/invalid; no SOC inference is available."
+            )
+        }
         ModelInfo(
-            metadata = metadata,
+            metadata = metadata.toAppModelMetadata(sha),
             sha256 = sha,
             bytes = size,
-            loaded = metadata.modelId != ModelMetadata.FALLBACK_MODEL_ID && sha.isNotBlank(),
-            fallbackReason = if (metadata.modelId == ModelMetadata.FALLBACK_MODEL_ID) {
-                "Model asset missing or invalid; heuristic fallback active."
-            } else null
+            loaded = true,
+            fallbackReason = if (metadata.isPlaceholder) {
+                "Placeholder model: SOC output is blocked in release builds and marked DEMO – NOT VALID in debug."
+            } else {
+                null
+            }
         )
     }
 
     override suspend fun metadata(): ModelMetadata = withContext(Dispatchers.io) {
-        ModelMetadataLoader.load(context)
+        runCatching { ModelAssets.metadata(context).toAppModelMetadata() }
+            .getOrElse { ModelMetadata.fallback() }
     }
 }

@@ -1,0 +1,14 @@
+{
+  "spec_version": "1.0.0",
+  "_note": "SINGLE SOURCE OF TRUTH. Kotlin (domain) and Python (training) both load this file. The eight features below are the real vector used by FeatureVector/FeatureVectorFactory (SRS-SOC-2026-V1 section 9), in the order the model consumes them. Update this file and retrain; never reorder in code alone.",
+  "features": [
+    {"name": "L_star", "unit": "CIE L*", "min": 0.0, "max": 100.0, "required": true, "fallback": null, "description": "Calibrated soil lightness (FeatureVector.lStar)"},
+    {"name": "a_star", "unit": "CIE a*", "min": -128.0, "max": 127.0, "required": true, "fallback": null, "description": "Calibrated green-red axis (FeatureVector.aStar)"},
+    {"name": "b_star", "unit": "CIE b*", "min": -128.0, "max": 127.0, "required": true, "fallback": null, "description": "Calibrated blue-yellow axis (FeatureVector.bStar)"},
+    {"name": "munsell_value", "unit": "Munsell value", "min": 0.0, "max": 10.0, "required": true, "fallback": null, "description": "Munsell value derived from calibrated Lab (FeatureVector.munsellValue)"},
+    {"name": "glcm_contrast", "unit": "normalised", "min": 0.0, "max": 1.0, "required": true, "fallback": null, "description": "GLCM contrast, normalised (FeatureVector.glcmContrast)"},
+    {"name": "glcm_energy", "unit": "normalised", "min": 0.0, "max": 1.0, "required": true, "fallback": null, "description": "GLCM energy, normalised (FeatureVector.glcmEnergy)"},
+    {"name": "ndvi_satellite", "unit": "index", "min": -1.0, "max": 1.0, "required": false, "fallback": 0.35, "description": "Sentinel-2 NDVI (FeatureVector.ndviSatellite). Optional: with no Sentinel token the app supplies a DEFAULT value and flags the result as degraded; the model must be trained with this fallback (see fallback_features_trained)."},
+    {"name": "clay_content_percent", "unit": "%", "min": 0.0, "max": 100.0, "required": true, "fallback": null, "description": "SoilGrids clay content covariate (FeatureVector.clayContentPercent)"}
+  ]
+}

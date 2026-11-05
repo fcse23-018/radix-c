@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [SampleEntity::class, CalibrationEntity::class, CovariateCacheEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 abstract class SoilCarbonDatabase : RoomDatabase() {

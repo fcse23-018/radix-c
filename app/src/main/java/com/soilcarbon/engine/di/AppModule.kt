@@ -12,7 +12,9 @@ import com.soilcarbon.engine.data.local.SampleDao
 import com.soilcarbon.engine.data.local.SoilCarbonDatabase
 import com.soilcarbon.engine.data.location.LocationProvider
 import com.soilcarbon.engine.data.ml.DefaultModelRepository
-import com.soilcarbon.engine.data.ml.TfliteSocPredictor
+import com.soilcarbon.engine.data.ml.GpuPreference
+import com.soilcarbon.engine.data.ml.ModelAssets
+import com.soilcarbon.engine.data.ml.TfliteSocModel
 import com.soilcarbon.engine.data.remote.ApiClientFactory
 import com.soilcarbon.engine.data.remote.OpenMeteoClient
 import com.soilcarbon.engine.data.remote.SentinelNdviClient
@@ -28,7 +30,6 @@ import com.soilcarbon.engine.data.sensors.LightMonitor
 import com.soilcarbon.engine.data.vision.ArUcoTargetDetector
 import com.soilcarbon.engine.data.vision.TargetImageProcessor
 import com.soilcarbon.engine.domain.calibration.CalibrationTargetSpec
-import com.soilcarbon.engine.domain.ml.SocPredictor
 import com.soilcarbon.engine.domain.repository.CalibrationRepository
 import com.soilcarbon.engine.domain.repository.CovariateRepository
 import com.soilcarbon.engine.domain.repository.ExportRepository
@@ -36,6 +37,10 @@ import com.soilcarbon.engine.domain.repository.ModelRepository
 import com.soilcarbon.engine.domain.repository.SampleRepository
 import com.soilcarbon.engine.domain.repository.SettingsRepository
 import com.soilcarbon.engine.domain.usecase.AnalyzeSampleUseCase
+import org.soilcarbon.domain.AnalyzeSample
+import org.soilcarbon.domain.FeatureSpec
+import org.soilcarbon.domain.PlaceholderPolicy
+import org.soilcarbon.domain.SocModel
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -99,26 +104,42 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSentinelNdviClient(@ApplicationContext context: Context): SentinelNdviClient {
-        val token = context.getSharedPreferences("soilcarbon_secrets", Context.MODE_PRIVATE)
-            .getString("sentinel_token", "") ?: ""
-        return SentinelNdviClient(ApiClientFactory.sentinel(), token)
-    }
+    fun provideSentinelNdviClient(settingsRepository: SettingsRepository): SentinelNdviClient =
+        SentinelNdviClient(
+            api = ApiClientFactory.sentinel(),
+            tokenProvider = { settingsRepository.current().sentinelToken },
+        )
 
     @Provides
     @Singleton
-    fun provideTflitePredictor(
-        @ApplicationContext context: Context
-    ): TfliteSocPredictor = TfliteSocPredictor(context)
+    fun provideFeatureSpec(@ApplicationContext context: Context): FeatureSpec =
+        ModelAssets.featureSpec(context)
 
     @Provides
     @Singleton
-    fun provideSocPredictor(predictor: TfliteSocPredictor): SocPredictor = predictor
+    fun provideSocModel(
+        @ApplicationContext context: Context,
+        gpuPreference: GpuPreference,
+    ): SocModel = TfliteSocModel(context) { gpuPreference.enabled() }
 
     @Provides
     @Singleton
-    fun provideAnalyzeSampleUseCase(predictor: SocPredictor): AnalyzeSampleUseCase =
-        AnalyzeSampleUseCase(predictor)
+    fun provideAnalyzeSample(spec: FeatureSpec, model: SocModel): AnalyzeSample = AnalyzeSample(
+        model = model,
+        spec = spec,
+        placeholderPolicy = if (BuildConfig.DEBUG) {
+            PlaceholderPolicy.ALLOW_DEMO
+        } else {
+            PlaceholderPolicy.BLOCK
+        },
+    )
+
+    @Provides
+    @Singleton
+    fun provideAnalyzeSampleUseCase(
+        analyzeSample: AnalyzeSample,
+        model: SocModel,
+    ): AnalyzeSampleUseCase = AnalyzeSampleUseCase(analyzeSample, model)
 
     @Provides
     @Singleton

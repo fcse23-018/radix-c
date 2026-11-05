@@ -170,6 +170,10 @@ class DefaultExportRepository @Inject constructor(
         "model_id" to prediction?.modelId,
         "model_version" to prediction?.modelVersion,
         "fallback_model" to prediction?.fallbackUsed,
+        "report_status" to prediction?.reportStatus,
+        "degraded" to prediction?.degraded,
+        "demo_not_valid" to (prediction?.isDemo == true),
+        "feature_provenance" to prediction?.provenance,
         "tilt_degrees" to imu?.maxTiltDegrees,
         "lux" to light?.lux,
         "exposure_iso" to exposure?.iso,
@@ -214,6 +218,11 @@ class DefaultExportRepository @Inject constructor(
             soil.depthCm.toString(),
             prediction?.modelId ?: "",
             prediction?.modelVersion ?: "",
+            prediction?.reportStatus ?: "",
+            (prediction?.degraded == true).toString(),
+            (prediction?.isDemo == true).toString(),
+            prediction?.provenance.orEmpty().toSortedMap()
+                .entries.joinToString(";") { "${it.key}:${it.value}" },
             provenanceSha256 ?: "",
             jpegSha256 ?: "",
             rawSha256 ?: "",
@@ -241,6 +250,7 @@ class DefaultExportRepository @Inject constructor(
                 "carbon_stock_mg_per_ha,L_star,a_star,b_star,munsell_value,glcm_contrast,glcm_energy," +
                 "ndvi_satellite,clay_content_percent,ndvi_source,clay_source,moisture_percent," +
                 "moisture_method,bulk_density_g_cm3,depth_cm,model_id,model_version," +
+                "report_status,degraded,demo_not_valid,feature_provenance," +
                 "provenance_sha256,jpeg_sha256,raw_sha256,calibration_quality,exposure_iso," +
                 "exposure_time_ns,white_balance_kelvin,lux,tilt_degrees,notes"
     }

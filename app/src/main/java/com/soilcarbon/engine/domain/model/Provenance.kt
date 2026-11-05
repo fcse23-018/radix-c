@@ -22,7 +22,10 @@ data class ProvenanceRecord(
     val jpegImageSha256: String?,
     val deviceModel: String?,
     val algorithm: String = "SHA-256",
-    val digest: String
+    val digest: String,
+    val reportStatus: String = Prediction.STATUS_VALID,
+    val degraded: Boolean = false,
+    val featureProvenance: Map<String, String> = emptyMap(),
 ) {
     fun toExportMap(): Map<String, Any?> = mapOf(
         "sample_id" to sampleId,
@@ -36,6 +39,9 @@ data class ProvenanceRecord(
         "raw_image_sha256" to rawImageSha256,
         "jpeg_image_sha256" to jpegImageSha256,
         "device_model" to deviceModel,
+        "report_status" to reportStatus,
+        "degraded" to degraded,
+        "feature_provenance" to featureProvenance,
         "algorithm" to algorithm,
         "digest" to digest
     )
@@ -65,6 +71,12 @@ object ProvenanceHasher {
             .append(';').append(format(sample.prediction?.socUpper95)).append('\n')
         append("model=").append(sample.prediction?.modelId).append('@')
             .append(sample.prediction?.modelVersion).append('\n')
+        append("report_status=").append(sample.prediction?.reportStatus).append('\n')
+        append("degraded=").append(sample.prediction?.degraded).append('\n')
+        append("feature_provenance=").append(
+            sample.prediction?.provenance.orEmpty().toSortedMap()
+                .entries.joinToString(",") { "${it.key}:${it.value}" }
+        ).append('\n')
         append("calibration=").append(sample.calibration?.let { calibrationHash(it) }).append('\n')
         append("raw_sha256=").append(sample.rawSha256).append('\n')
         append("jpeg_sha256=").append(sample.jpegSha256).append('\n')
@@ -88,7 +100,10 @@ object ProvenanceHasher {
         rawImageSha256 = sample.rawSha256,
         jpegImageSha256 = sample.jpegSha256,
         deviceModel = sample.exposure?.deviceModel,
-        digest = sha256(sample)
+        digest = sha256(sample),
+        reportStatus = sample.prediction?.reportStatus ?: Prediction.STATUS_VALID,
+        degraded = sample.prediction?.degraded ?: false,
+        featureProvenance = sample.prediction?.provenance.orEmpty(),
     )
 
     fun sha256Hex(value: String): String {

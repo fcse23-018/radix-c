@@ -41,6 +41,7 @@ interface SettingsRepository {
     suspend fun setCapturePolicy(requireRaw: Boolean, requireGps: Boolean, minLux: Float)
     suspend fun setGpuEnabled(enabled: Boolean)
     suspend fun setSyncResult(message: String, atMillis: Long)
+    suspend fun setSentinelToken(token: String)
 }
 
 interface CovariateRepository {

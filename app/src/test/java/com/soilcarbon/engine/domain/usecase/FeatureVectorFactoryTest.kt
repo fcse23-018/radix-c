@@ -91,23 +91,6 @@ class FeatureVectorFactoryTest {
             .isEqualTo("[38.500000, 9.250000, 18.750000, 4.600000, 0.310000, 0.420000, 0.470000, 31.500000]")
     }
 
-    @Test
-    fun `validation reports implausible capture conditions`() {
-        val suspicious = FeatureVector(1.0, 0.0, 0.0, 0.1, 0.9, 0.01, -0.2, 0.5)
-
-        val issues = FeatureVectorFactory.validate(suspicious)
-
-        assertThat(issues).hasSize(4)
-        assertThat(issues.first()).contains("L*")
-    }
-
-    @Test
-    fun `healthy vector passes validation`() {
-        val vector = FeatureVector(38.5, 9.25, 18.75, 4.6, 0.31, 0.42, 0.47, 31.5)
-
-        assertThat(FeatureVectorFactory.validate(vector)).isEmpty()
-    }
-
     @Test(expected = IllegalArgumentException::class)
     fun `feature vector rejects out-of-domain components`() {
         FeatureVector(101.0, 9.25, 18.75, 4.6, 0.31, 0.42, 0.47, 31.5)

@@ -44,7 +44,8 @@ class DefaultSettingsRepository @Inject constructor(
             onboardingComplete = prefs[Keys.ONBOARDING] ?: false,
             gdprConsentAtMillis = prefs[Keys.GDPR_CONSENT_AT],
             apiBaseUrl = prefs[Keys.API_BASE_URL] ?: "https://rest.isric.org/",
-            modelSourceUrl = prefs[Keys.MODEL_SOURCE_URL] ?: ""
+            modelSourceUrl = prefs[Keys.MODEL_SOURCE_URL] ?: "",
+            sentinelToken = prefs[Keys.SENTINEL_TOKEN] ?: ""
         )
     }
 
@@ -97,6 +98,14 @@ class DefaultSettingsRepository @Inject constructor(
         }
     }
 
+    override suspend fun setSentinelToken(token: String) {
+        context.settingsDataStore.edit { prefs ->
+            val trimmed = token.trim()
+            if (trimmed.isEmpty()) prefs.remove(Keys.SENTINEL_TOKEN)
+            else prefs[Keys.SENTINEL_TOKEN] = trimmed
+        }
+    }
+
     private object Keys {
         val ROLE = stringPreferencesKey("role")
         val BULK_DENSITY = doublePreferencesKey("bulk_density")
@@ -114,5 +123,6 @@ class DefaultSettingsRepository @Inject constructor(
         val GDPR_CONSENT_AT = longPreferencesKey("gdpr_consent_at")
         val API_BASE_URL = stringPreferencesKey("api_base_url")
         val MODEL_SOURCE_URL = stringPreferencesKey("model_source_url")
+        val SENTINEL_TOKEN = stringPreferencesKey("sentinel_token")
     }
 }

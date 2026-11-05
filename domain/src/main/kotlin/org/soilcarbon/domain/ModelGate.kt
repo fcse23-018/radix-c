@@ -11,6 +11,17 @@ data class ModelMetadata(
     val targetMax: Double,
     val validationPassed: Boolean,
     val dataSha256: String,
+    /** Optional description shown in Settings/About; never used by the gate. */
+    val description: String = "",
+    val trainingDataset: String = "",
+    val validationRmse: Double = 0.0,
+    val validationR2: Double = 0.0,
+    val uncertaintyMode: String = "fixed-sigma",
+    /** Input standardisation used by a TFLite adapter, in [featureOrder]. */
+    val featureMeans: List<Double> = emptyList(),
+    val featureScales: List<Double> = emptyList(),
+    val outputScale: Double = 1.0,
+    val outputOffset: Double = 0.0,
 )
 
 sealed interface GateProblem {

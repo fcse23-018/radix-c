@@ -23,6 +23,7 @@ android {
 
         buildConfigField("String", "MODEL_ASSET", "\"models/soc_model.tflite\"")
         buildConfigField("String", "MODEL_METADATA_ASSET", "\"models/soc_model_metadata.json\"")
+        buildConfigField("String", "FEATURE_SPEC_ASSET", "\"contracts/feature_spec.json\"")
         buildConfigField("String", "CALIBRATION_SPEC_ASSET", "\"calibration/calibration_target.json\"")
         buildConfigField("String", "DATABASE_NAME", "\"soilcarbon.db\"")
     }

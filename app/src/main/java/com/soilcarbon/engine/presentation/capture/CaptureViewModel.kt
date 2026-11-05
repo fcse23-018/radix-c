@@ -34,6 +34,7 @@ import com.soilcarbon.engine.domain.repository.CovariateRepository
 import com.soilcarbon.engine.domain.repository.SampleRepository
 import com.soilcarbon.engine.domain.repository.SettingsRepository
 import com.soilcarbon.engine.domain.usecase.AnalysisInput
+import com.soilcarbon.engine.domain.usecase.AnalysisOutcome
 import com.soilcarbon.engine.domain.usecase.AnalyzeSampleUseCase
 import com.soilcarbon.engine.domain.vision.ColorFeatures
 import com.soilcarbon.engine.domain.vision.ColorScience
@@ -431,7 +432,7 @@ class CaptureViewModel @Inject constructor(
                 )
 
                 _state.update { it.copy(analysisStep = "Running on-device inference…") }
-                val analyzed = analyzeSample.invoke(
+                val outcome = analyzeSample.invoke(
                     AnalysisInput(
                         sample = draft,
                         color = color,
@@ -443,6 +444,20 @@ class CaptureViewModel @Inject constructor(
                         soil = settings.toSoilProperties()
                     )
                 )
+                val analyzed = when (outcome) {
+                    is AnalysisOutcome.Rejected -> {
+                        _state.update {
+                            it.copy(
+                                busy = false,
+                                analysisStep = "",
+                                error = outcome.message,
+                                lastSample = null
+                            )
+                        }
+                        return@launch
+                    }
+                    is AnalysisOutcome.Success -> outcome.sample
+                }
                 sampleRepository.upsert(analyzed)
 
                 _state.update {
@@ -456,6 +471,12 @@ class CaptureViewModel @Inject constructor(
                             append("Saved ${analyzed.displayName}: ")
                             append("%.2f%% SOC".format(java.util.Locale.US, analyzed.prediction?.socPercent ?: 0.0))
                             append(" (${analyzed.calibration?.qualityLabel ?: "uncalibrated"} calibration)")
+                            if (analyzed.prediction?.isDemo == true) {
+                                append(" · DEMO – NOT VALID")
+                            }
+                            if (analyzed.prediction?.degraded == true) {
+                                append(" · degraded (defaulted inputs)")
+                            }
                         }
                     )
                 }

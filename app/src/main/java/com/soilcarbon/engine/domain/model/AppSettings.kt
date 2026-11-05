@@ -16,7 +16,9 @@ data class AppSettings(
     val onboardingComplete: Boolean = false,
     val gdprConsentAtMillis: Long? = null,
     val apiBaseUrl: String = "https://rest.isric.org/",
-    val modelSourceUrl: String = ""
+    val modelSourceUrl: String = "",
+    /** Sentinel Hub token. Blank means satellite NDVI is unavailable and must be DEFAULT. */
+    val sentinelToken: String = ""
 ) {
     fun toSoilProperties(): SoilProperties = SoilProperties(bulkDensityGcm3, depthCm)
 }

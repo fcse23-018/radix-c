@@ -25,15 +25,4 @@ object FeatureVectorFactory {
         ndviSatellite = covariates.ndvi.value.coerceIn(-1.0, 1.0),
         clayContentPercent = covariates.clayPercent.value.coerceIn(0.0, 100.0)
     )
-
-    /**
-     * Validation hook used before inference. Returns a list of human-readable failures; an empty
-     * list means the vector is within the domains used to train the shipped model.
-     */
-    fun validate(vector: FeatureVector): List<String> = buildList {
-        if (vector.lStar < 2.0) add("L* unusually dark; check lens contamination or under-exposure")
-        if (vector.glcmContrast > 0.85) add("Texture contrast saturated; soil is out of focus or clumped")
-        if (vector.glcmEnergy < 0.05) add("Texture energy extremely low; aperture may be occluded")
-        if (vector.clayContentPercent !in 1.0..80.0) add("Clay covariate outside plausible range")
-    }
 }
