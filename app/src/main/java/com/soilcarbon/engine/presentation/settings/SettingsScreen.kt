@@ -88,7 +88,8 @@ fun SettingsScreen(
         item {
             SettingsCard(icon = Icons.Outlined.Tune, title = "Working role") {
                 Text(
-                    "Switches the workspace between capture, agronomy and data-science tooling.",
+                    "Switches between the field-capture workspace and the dashboard/map workspace. " +
+                        "All roles use the same local inference and export pipeline.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

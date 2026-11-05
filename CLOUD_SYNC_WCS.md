@@ -1,7 +1,13 @@
-# Cloud Sync - WCS Implementation
+# Cloud Sync - WCS Design Note
+
+> **Status: design note only — not implemented.**
+> This document describes a proposed cloud-sync design. None of the `shared/sync/*` classes, the
+> Earth Engine client, the sync service or the sync settings UI described below exist in this
+> repository. The app implements optional point covariate lookups through SoilGrids, Open-Meteo and
+> Sentinel in `data/remote/*`; it does not upload samples or synchronise data to a server.
 
 ## Overview
-Complete cloud sync implementation using ISRIC SoilGrids Web Coverage Service (WCS) and Google Earth Engine API for environmental covariates.
+Design proposal for cloud sync using ISRIC SoilGrids Web Coverage Service (WCS) and Google Earth Engine API for environmental covariates.
 
 ## Why WCS Instead of REST API?
 
@@ -12,7 +18,7 @@ ISRIC SoilGrids REST API is currently paused/unavailable. WCS (Web Coverage Serv
 - **More efficient**: Designed for raster data access
 - **Better support**: Widely supported by GIS software
 
-## Components Implemented
+## Proposed Components (not implemented)
 
 ### 1. WCS Data Models
 **File**: `shared/sync/model/WCSCoverage.kt`
@@ -30,7 +36,7 @@ Data models for WCS operations:
 ### 2. SoilGrids WCS Client
 **File**: `shared/sync/api/SoilGridsWCSClient.kt`
 
-Complete WCS client implementation:
+Proposed WCS client interface:
 
 #### WCS Operations
 - **getCapabilities()**: List all available soil layers
@@ -225,7 +231,7 @@ val result = cloudSyncService.syncSamples()
 - No API key required for WCS
 - Base URL: `https://maps.isric.org/`
 - Fair use policy: 5 API calls per minute
-- Rate limiting implemented in client
+- Rate limiting expected in the proposed client
 
 ## Security Considerations
 

@@ -9,11 +9,11 @@ enum class UserRole(val displayName: String, val description: String) {
     ),
     AGRONOMIST(
         "Agronomist",
-        "Field dashboard, map, regional calibration overlays and GeoJSON/CSV export."
+        "Field dashboard, sample map, review and CSV/GeoJSON export."
     ),
     DATA_SCIENTIST(
         "Data Scientist",
-        "Model management, spectral database sync and batch reprocessing."
+        "Dashboard, sample map, review and CSV/GeoJSON/provenance export."
     );
 
     companion object {

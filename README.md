@@ -6,7 +6,7 @@ SoilCarbon Engine is a production-oriented Android application that turns a mode
 field screening instrument for soil organic carbon. It captures a RAW + JPEG image of a soil aperture
 and a printed six-patch calibration card, rectifies the capture, fits a D65 radiometric transfer
 function, extracts the exact feature vector mandated by **SRS-SOC-2026-V1 v2.4.0**, and runs on-device
-TFLite inference with a deterministic heuristic fallback.
+TFLite inference.
 
 > **Research screening only.** Results must be validated against dry combustion (ISO 10694) before
 > regulatory reporting, carbon-credit issuance, or agronomic decisions. The shipped model is an
@@ -31,16 +31,20 @@ TFLite inference with a deterministic heuristic fallback.
 - **Moisture correction** — EPO projection from a gravimetric moisture value when supplied.
 - **Exact SRS feature vector**
   `[L*, a*, b*, Munsell_Value, GLCM_Contrast, GLCM_Energy, NDVI_Sat, Clay_Content]`.
-- **On-device inference** — TFLite with optional GPU delegate and NNAPI/CPU fallback. A heuristic
-  regressor keeps capture working when the model is absent or rejects the input.
+- **On-device inference** — TFLite with optional GPU delegate and NNAPI/CPU fallback. If the model
+  asset is missing or invalid, analysis fails closed with a visible rejection; the app never
+  invents a SOC value.
 - **SOC/SOM + uncertainty** — SOM = SOC × 1.724, 95 % interval, confidence score and carbon stock
   (Mg C/ha) from bulk density and depth.
 - **Geospatial fusion** — GPS fix, SoilGrids clay/SOC baseline, Sentinel-2 NDVI and Open-Meteo
   climate, all cached for offline use with regional defaults as the final fallback.
 - **Encrypted local storage** — Room + SQLCipher (AES-256), Keystore-backed AES-GCM for image files.
 - **Provenance** — SHA-256 over a deterministic scientific payload plus RAW/JPEG digests.
-- **Role-based workspaces** — Field Technician, Agronomist and Data Scientist.
-- **Exports** — CSV, GeoJSON, full JSON bundle and provenance manifest.
+- **Role-based navigation** — Field Technicians get the capture workspace; Agronomist and Data
+  Scientist roles get the dashboard and sample map. All roles share the same local analysis and
+  export pipeline.
+- **Exports** — CSV, GeoJSON, full JSON bundle and provenance manifest, shared read-only through the
+  Android chooser or saved through the Storage Access Framework.
 - **No account required** — network access is optional and can be disabled in Settings.
 
 ---
@@ -145,8 +149,10 @@ SQLCipher native libraries and the `tflite` asset are kept uncompressed by the p
    GLCM and covariates, build the feature vector, run inference, hash provenance.
 7. **Review** — inspect every scientific field, export CSV/GeoJSON/JSON or delete the record.
 
-Captures are retained locally by default. Nothing is uploaded unless you export or explicitly enable
-and run covariate sync.
+Captures are retained locally by default. When *Allow network covariate lookup* is enabled, analysis
+sends the sample coordinates to SoilGrids, Open-Meteo and Sentinel to request covariate values;
+sample images and records are never uploaded. Disable the setting for a fully offline workflow, or
+use *Refresh covariates* to update the cached locations on demand.
 
 ### Role-based navigation
 
@@ -203,9 +209,9 @@ Shipped placeholder:
 - `app/src/main/assets/models/soc_model.tflite`
 - `app/src/main/assets/models/soc_model_metadata.json`
 
-The placeholder is a small dense regressor bootstrapped from the in-app heuristic. It is marked
-`"is_placeholder": true`, and the UI/predictions label it accordingly. It exists so the application
-can build, run and exercise the full inference path before a validated regional model is available.
+The shipped placeholder is marked `"is_placeholder": true`, and the UI/predictions label it
+accordingly. It exists so the application can build, run and exercise the full inference path before
+a validated regional model is available.
 
 ### Model contract
 
@@ -261,9 +267,10 @@ print(interpreter.get_input_details()[0]["shape"])   # [1, 8]
 print(interpreter.get_output_details()[0]["shape"])  # [1, 3]
 ```
 
-The app never refuses a capture because the model is missing: `TfliteSocPredictor` catches load and
-inference failures and delegates to `HeuristicSocRegressor`. The fallback marks every prediction with
-`fallbackUsed = true` and a warning note.
+The app never invents a SOC value when the model is missing: `TfliteSocModel` surfaces the load
+failure, `AnalyzeSampleUseCase` converts it into a visible rejection, and no sample is stored as
+analysed. Release builds also block the placeholder model; debug builds label its output
+**DEMO – NOT VALID**.
 
 ### Regenerating the placeholder and card assets
 
@@ -287,12 +294,15 @@ regenerated placeholder for operational decisions.
   lookup* for a fully offline workflow. Cached results are used when offline; regional defaults are
   the final fallback and are flagged in the UI.
 - **Consent** — onboarding records GDPR consent locally; no account or cloud identity is created.
-- **Deletion** — deleting a sample removes its database record and provenance entry. Encrypted files
-  remain in app-private storage until purged by the OS; use Android’s app-storage controls for a full
-  wipe.
+- **Deletion** — deleting a sample removes its database row and encrypted image files in one
+  lifecycle unit. If an encrypted file cannot be removed, the sample is kept so the delete can be
+  retried and no orphaned file is left behind. Use Android’s app-storage controls for a full wipe.
+- **Covariate network requests** — when network lookup is enabled, sample coordinates are sent to
+  SoilGrids, Open-Meteo and Sentinel. No image or sample record is uploaded.
 
-Exports are written to the app cache and shared through `FileProvider`. Treat exported CSV/GeoJSON/JSON
-as sensitive: they contain location, images hashes, model identity and soil properties.
+Exports are written to `cacheDir/exports` and shared read-only through `FileProvider`; the provider
+exposes only that directory. Treat exported CSV/GeoJSON/JSON as sensitive: they contain location,
+image hashes, model identity and soil properties.
 
 ---
 
@@ -313,8 +323,8 @@ network connection.
 
 ## Validation and limitations
 
-- The **shipped model is a placeholder** trained on synthetic heuristic targets. Its reported fit is
-  not evidence of field accuracy.
+- The **shipped model is a placeholder** with sidecar metrics from a synthetic training fixture. Its
+  reported fit is not evidence of field accuracy.
 - Visible-colour SOC prediction is sensitive to moisture, soil roughness, iron oxides, organic
   matter composition, camera spectral response and illumination. The calibration card corrects
   intensity and tone response, not the fundamental spectral ambiguity.
@@ -334,6 +344,22 @@ network connection.
 
 ---
 
+## Not implemented
+
+The following capabilities appear in older project documents but are **not present in this app**:
+
+- **Cloud upload / account sync** — there is no server backend, account system or sample upload.
+  `CLOUD_SYNC_WCS.md` is a design note only. Network access is limited to optional point covariate
+  lookups (SoilGrids, Open-Meteo, Sentinel).
+- **Agronomist regional calibration overlays** — the Agronomist role gets the dashboard and map, not
+  regional overlay editing.
+- **Data-scientist model management, spectral database sync and batch reprocessing** — the Data
+  Scientist role shares the dashboard/map/review/export workspace. Models are shipped as app assets;
+  there is no in-app download, replacement or batch reprocessing.
+- **Bluetooth / NIR spectrometer input** — no BLE code or permissions ship in the manifest.
+
+---
+
 ## References
 
 1. **Smartphone Soil Carbon SRS & Reference Manual** — `SRS-SOC-2026-V1` v2.4.0 (authoritative
@@ -341,8 +367,10 @@ network connection.
 2. **Smartphone-Based Soil Carbon Measurement Techniques** — method review.
 3. **TerroChroma UI & Navigation Specification** — capture and navigation guidance.
 
-Supporting repository documents: `COMPUTER_VISION_MODULE.md`, `CLOUD_SYNC_WCS.md`,
-`DATA_EXPORT_MODULE.md`, `MAP_INTEGRATION.md`, `GDPR_COMPLIANCE.md`, `PRIVACY_POLICY.md`.
+Supporting repository documents: `COMPUTER_VISION_MODULE.md`, `DATA_EXPORT_MODULE.md`,
+`MAP_INTEGRATION.md`, `GDPR_COMPLIANCE.md`, `PRIVACY_POLICY.md`.
+
+Design note only (not implemented in this app): `CLOUD_SYNC_WCS.md`.
 
 ---
 

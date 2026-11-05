@@ -215,7 +215,7 @@ private fun ModelCard(
                 Text("Reading model metadata…", style = MaterialTheme.typography.bodySmall)
             } else {
                 InfoRow("Model", "${model.modelId} @ ${model.modelVersion}")
-                InfoRow("Mode", if (loaded) "TFLite asset loaded" else "Heuristic fallback", emphasize = true)
+                InfoRow("Mode", if (loaded) "TFLite asset loaded" else "Model unavailable", emphasize = true)
                 InfoRow("Validation RMSE", formatPercent(model.validationRmsePercent))
                 InfoRow("Validation R²", formatNumber(model.validationR2, 3))
                 InfoRow("Uncertainty", model.uncertaintyMode)

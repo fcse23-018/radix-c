@@ -81,19 +81,19 @@ data class ModelMetadata(
     }
 
     companion object {
-        const val FALLBACK_MODEL_ID = "heuristic-fallback"
-        const val FALLBACK_MODEL_VERSION = "0.1.0-research"
+        const val FALLBACK_MODEL_ID = "unavailable"
+        const val FALLBACK_MODEL_VERSION = "0.0.0"
 
         fun fallback(): ModelMetadata = ModelMetadata(
             modelId = FALLBACK_MODEL_ID,
             modelVersion = FALLBACK_MODEL_VERSION,
-            description = "Uncalibrated physics-guided visible-colour regression. For research " +
-                "and demonstration only; not a substitute for ISO 10694 dry combustion.",
+            description = "No model asset or sidecar could be loaded. SOC inference is " +
+                "unavailable; captures are rejected rather than estimated by a fallback.",
             featureOrder = FeatureVector.FEATURE_NAMES,
-            trainingDataset = "None — literature-derived coefficients",
-            validationRmsePercent = 0.62,
-            validationR2 = 0.58,
-            uncertaintyMode = "fixed-sigma",
+            trainingDataset = "None — no model loaded",
+            validationRmsePercent = 0.0,
+            validationR2 = 0.0,
+            uncertaintyMode = "unavailable",
             featureMeans = listOf(42.0, 6.0, 14.0, 5.0, 0.35, 0.25, 0.35, 25.0),
             featureScales = listOf(18.0, 11.0, 14.0, 3.0, 0.30, 0.20, 0.25, 12.0),
             isPlaceholder = true,

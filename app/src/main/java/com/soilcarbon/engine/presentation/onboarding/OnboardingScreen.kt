@@ -173,9 +173,11 @@ fun OnboardingScreen(
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                "Images and measurements are encrypted on this device. Network " +
-                                    "covariate lookups are optional and can be disabled at any time. " +
-                                    "No data is uploaded without an explicit export or sync action.",
+                                "Images and measurements are encrypted on this device. With " +
+                                    "network covariate lookup enabled, capture sends the sample " +
+                                    "coordinates to SoilGrids, Open-Meteo and Sentinel; no image or " +
+                                    "sample record is uploaded. Disable network lookup in Settings " +
+                                    "for a fully offline workflow.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
