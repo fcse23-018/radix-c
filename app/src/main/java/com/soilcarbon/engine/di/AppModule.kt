@@ -9,6 +9,7 @@ import com.soilcarbon.engine.data.export.DefaultExportRepository
 import com.soilcarbon.engine.data.local.CalibrationDao
 import com.soilcarbon.engine.data.local.CovariateCacheDao
 import com.soilcarbon.engine.data.local.SampleDao
+import com.soilcarbon.engine.data.local.SampleLifecycleDao
 import com.soilcarbon.engine.data.local.SoilCarbonDatabase
 import com.soilcarbon.engine.data.location.LocationProvider
 import com.soilcarbon.engine.data.ml.DefaultModelRepository
@@ -21,8 +22,9 @@ import com.soilcarbon.engine.data.remote.SentinelNdviClient
 import com.soilcarbon.engine.data.remote.SoilGridsClient
 import com.soilcarbon.engine.data.repository.DefaultCalibrationRepository
 import com.soilcarbon.engine.data.repository.DefaultCovariateRepository
-import com.soilcarbon.engine.data.repository.DefaultSampleRepository
 import com.soilcarbon.engine.data.repository.DefaultSettingsRepository
+import com.soilcarbon.engine.data.repository.RoomSampleRepository
+import com.soilcarbon.engine.data.security.EncryptedBlobStore
 import com.soilcarbon.engine.data.security.EncryptedFileStore
 import com.soilcarbon.engine.data.security.KeystoreSecretStore
 import com.soilcarbon.engine.data.sensors.ImuMonitor
@@ -34,6 +36,7 @@ import com.soilcarbon.engine.domain.repository.CalibrationRepository
 import com.soilcarbon.engine.domain.repository.CovariateRepository
 import com.soilcarbon.engine.domain.repository.ExportRepository
 import com.soilcarbon.engine.domain.repository.ModelRepository
+import com.soilcarbon.engine.domain.repository.SampleBlobStore
 import com.soilcarbon.engine.domain.repository.SampleRepository
 import com.soilcarbon.engine.domain.repository.SettingsRepository
 import com.soilcarbon.engine.domain.usecase.AnalyzeSampleUseCase
@@ -83,6 +86,10 @@ object AppModule {
 
     @Provides
     fun provideSampleDao(database: SoilCarbonDatabase): SampleDao = database.sampleDao()
+
+    @Provides
+    fun provideSampleLifecycleDao(database: SoilCarbonDatabase): SampleLifecycleDao =
+        database.sampleLifecycleDao()
 
     @Provides
     fun provideCalibrationDao(database: SoilCarbonDatabase): CalibrationDao =
@@ -179,7 +186,11 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindSampleRepository(impl: DefaultSampleRepository): SampleRepository
+    abstract fun bindSampleRepository(impl: RoomSampleRepository): SampleRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSampleBlobStore(impl: EncryptedBlobStore): SampleBlobStore
 
     @Binds
     @Singleton

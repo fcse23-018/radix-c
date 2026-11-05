@@ -3,6 +3,7 @@ package com.soilcarbon.engine.data.security
 import com.soilcarbon.engine.core.Dispatchers
 import com.soilcarbon.engine.domain.model.ProvenanceHasher
 import kotlinx.coroutines.withContext
+import org.soilcarbon.domain.BlobRef
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -39,7 +40,7 @@ class EncryptedFileStore(
 
     suspend fun importFile(source: File, relativePath: String): SecureFile = withContext(Dispatchers.io) {
         require(source.exists()) { "Source file does not exist: ${source.name}" }
-        val target = File(rootDir, relativePath).apply { parentFile?.mkdirs() }
+        val target = resolve(relativePath).apply { parentFile?.mkdirs() }
         val digest = MessageDigest.getInstance("SHA-256")
         val iv = ByteArray(12).also(random::nextBytes)
         val cipher = Cipher.getInstance(TRANSFORMATION)
@@ -68,7 +69,7 @@ class EncryptedFileStore(
 
     suspend fun writeBytes(relativePath: String, bytes: ByteArray): SecureFile =
         withContext(Dispatchers.io) {
-            val target = File(rootDir, relativePath).apply { parentFile?.mkdirs() }
+            val target = resolve(relativePath).apply { parentFile?.mkdirs() }
             val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
             val iv = ByteArray(12).also(random::nextBytes)
             val cipher = Cipher.getInstance(TRANSFORMATION)
@@ -84,7 +85,7 @@ class EncryptedFileStore(
 
     /** Decrypts to a temporary cache file. Callers must delete the returned file afterwards. */
     suspend fun decryptToTemp(relativePath: String, cacheDir: File): File = withContext(Dispatchers.io) {
-        val source = File(rootDir, relativePath)
+        val source = resolve(relativePath)
         require(source.exists()) { "Encrypted asset missing: $relativePath" }
         val temp = File.createTempFile("soilcarbon_", ".tmp", cacheDir)
         FileInputStream(source).use { input ->
@@ -104,11 +105,46 @@ class EncryptedFileStore(
         temp
     }
 
-    fun exists(relativePath: String): Boolean = File(rootDir, relativePath).exists()
+    fun exists(relativePath: String): Boolean = resolve(relativePath).exists()
 
-    fun delete(relativePath: String): Boolean = File(rootDir, relativePath).delete()
+    /** Idempotent: returns true when the path no longer exists afterwards. */
+    fun delete(relativePath: String): Boolean {
+        val file = resolve(relativePath)
+        return !file.exists() || file.delete()
+    }
 
-    fun absolutePath(relativePath: String): File = File(rootDir, relativePath)
+    /** Idempotent: returns true when the blob no longer exists afterwards. */
+    fun delete(ref: BlobRef): Boolean = delete(ref.path)
+
+    /**
+     * Every encrypted sample blob stored under `images/<sampleId>/<file>`.
+     * Exports live outside `images/` and are deliberately not returned.
+     */
+    fun listAll(): List<BlobRef> {
+        val imagesDir = File(rootDir, IMAGES_DIR)
+        if (!imagesDir.exists()) return emptyList()
+        return imagesDir.walkTopDown()
+            .filter { it.isFile }
+            .mapNotNull { file ->
+                val relative = file.relativeTo(rootDir).invariantSeparatorsPath
+                val parts = relative.split('/')
+                if (parts.size != 3) return@mapNotNull null
+                BlobRef(sampleId = parts[1], kind = parts[2], path = relative)
+            }
+            .toList()
+    }
+
+    fun absolutePath(relativePath: String): File = resolve(relativePath)
+
+    private fun resolve(relativePath: String): File {
+        val file = File(rootDir, relativePath)
+        val root = rootDir.canonicalFile
+        val canonical = file.canonicalFile
+        require(canonical == root || canonical.path.startsWith(root.path + File.separator)) {
+            "Refusing path outside the secure root: $relativePath"
+        }
+        return canonical
+    }
 
     private fun fileKey(): java.security.Key {
         // Dedicated file key: distinct alias from the database wrapping key so rotation can be
@@ -134,6 +170,7 @@ class EncryptedFileStore(
     }
 
     private companion object {
+        const val IMAGES_DIR = "images"
         val MAGIC = byteArrayOf('S'.code.toByte(), 'C'.code.toByte(), 'F'.code.toByte(), '1'.code.toByte())
         const val TRANSFORMATION = "AES/GCM/NoPadding"
         const val FILE_ALIAS = "soilcarbon_file_key_v1"

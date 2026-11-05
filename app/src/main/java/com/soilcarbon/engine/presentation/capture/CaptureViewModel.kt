@@ -11,7 +11,6 @@ import com.soilcarbon.engine.core.Dispatchers
 import com.soilcarbon.engine.data.camera.CameraController
 import com.soilcarbon.engine.data.camera.CameraDeviceInfo
 import com.soilcarbon.engine.data.calibration.CalibrationSpecLoader
-import com.soilcarbon.engine.data.security.EncryptedFileStore
 import com.soilcarbon.engine.data.sensors.ImuMonitor
 import com.soilcarbon.engine.data.sensors.LightMonitor
 import com.soilcarbon.engine.data.location.LocationProvider
@@ -31,11 +30,12 @@ import com.soilcarbon.engine.domain.model.SampleStatus
 import com.soilcarbon.engine.domain.model.SoilSample
 import com.soilcarbon.engine.domain.repository.CalibrationRepository
 import com.soilcarbon.engine.domain.repository.CovariateRepository
-import com.soilcarbon.engine.domain.repository.SampleRepository
 import com.soilcarbon.engine.domain.repository.SettingsRepository
 import com.soilcarbon.engine.domain.usecase.AnalysisInput
 import com.soilcarbon.engine.domain.usecase.AnalysisOutcome
 import com.soilcarbon.engine.domain.usecase.AnalyzeSampleUseCase
+import com.soilcarbon.engine.domain.usecase.BlobSource
+import com.soilcarbon.engine.domain.usecase.SampleService
 import com.soilcarbon.engine.domain.vision.ColorFeatures
 import com.soilcarbon.engine.domain.vision.ColorScience
 import com.soilcarbon.engine.domain.vision.EpoMoistureCorrector
@@ -111,10 +111,9 @@ class CaptureViewModel @Inject constructor(
     private val imageProcessor: TargetImageProcessor,
     private val calibrationRepository: CalibrationRepository,
     private val covariateRepository: CovariateRepository,
-    private val sampleRepository: SampleRepository,
     private val settingsRepository: SettingsRepository,
     private val analyzeSample: AnalyzeSampleUseCase,
-    private val fileStore: EncryptedFileStore,
+    private val sampleService: SampleService,
     val targetSpec: CalibrationTargetSpec
 ) : ViewModel() {
 
@@ -305,18 +304,6 @@ class CaptureViewModel @Inject constructor(
                     throw IllegalStateException(captureFiles.error ?: "JPEG capture failed.")
                 }
 
-                _state.update { it.copy(analysisStep = "Securing encrypted evidence…") }
-                val jpegSecure = withContext(Dispatchers.io) {
-                    fileStore.importFile(jpegFile, "images/$sampleId/capture.jpg")
-                }
-                val rawSecure = withContext(Dispatchers.io) {
-                    if (captureFiles.rawSaved && rawFile.exists() && rawFile.length() > 0) {
-                        fileStore.importFile(rawFile, "images/$sampleId/capture.dng")
-                    } else {
-                        null
-                    }
-                }
-
                 _state.update { it.copy(analysisStep = "Detecting the calibration card…") }
                 val decoded = withContext(Dispatchers.io) { BitmapFactory.decodeFile(jpegFile.absolutePath) }
                     ?: throw IllegalStateException("Could not decode the captured JPEG.")
@@ -369,9 +356,6 @@ class CaptureViewModel @Inject constructor(
                         aperture.cropBitmap.compress(Bitmap.CompressFormat.JPEG, 92, output)
                     }
                 }
-                val cropSecure = withContext(Dispatchers.io) {
-                    fileStore.importFile(cropFile, "images/$sampleId/aperture.jpg")
-                }
                 aperture.cropBitmap.recycle()
 
                 _state.update { it.copy(analysisStep = "Fusing geospatial covariates…") }
@@ -411,54 +395,61 @@ class CaptureViewModel @Inject constructor(
                     autoFocusLocked = true
                 )
 
-                val draft = SoilSample(
-                    id = sampleId,
-                    tag = _state.value.tag.trim(),
-                    notes = _state.value.notes.trim(),
-                    role = settings.role,
-                    status = SampleStatus.CAPTURED,
-                    location = location,
-                    imu = _state.value.imu,
-                    light = _state.value.light,
-                    exposure = exposure,
-                    jpegImagePath = jpegSecure.relativePath,
-                    rawImagePath = rawSecure?.relativePath,
-                    jpegSha256 = jpegSecure.sha256,
-                    rawSha256 = rawSecure?.sha256,
-                    apertureCropPath = cropSecure.relativePath,
-                    calibration = calibrationSummary,
-                    moisture = moisture.takeIf { it.method != com.soilcarbon.engine.domain.model.MoistureMethod.NONE },
-                    soil = settings.toSoilProperties()
-                )
+                val blobSources = buildList {
+                    add(BlobSource(BLOB_JPEG, "capture.jpg", jpegFile))
+                    if (captureFiles.rawSaved && rawFile.exists() && rawFile.length() > 0) {
+                        add(BlobSource(BLOB_RAW, "capture.dng", rawFile))
+                    }
+                    add(BlobSource(BLOB_APERTURE, "aperture.jpg", cropFile))
+                }
 
-                _state.update { it.copy(analysisStep = "Running on-device inference…") }
-                val outcome = analyzeSample.invoke(
-                    AnalysisInput(
-                        sample = draft,
-                        color = color,
-                        texture = aperture.texture,
-                        covariates = covariates,
+                _state.update { it.copy(analysisStep = "Securing encrypted evidence…") }
+                val analyzed = sampleService.create(sampleId, blobSources) { blobs ->
+                    val jpegBlob = blobs.getValue(BLOB_JPEG)
+                    val rawBlob = blobs[BLOB_RAW]
+                    val apertureBlob = blobs.getValue(BLOB_APERTURE)
+
+                    val draft = SoilSample(
+                        id = sampleId,
+                        tag = _state.value.tag.trim(),
+                        notes = _state.value.notes.trim(),
+                        role = settings.role,
+                        status = SampleStatus.CAPTURED,
+                        location = location,
+                        imu = _state.value.imu,
+                        light = _state.value.light,
+                        exposure = exposure,
+                        jpegImagePath = jpegBlob.relativePath,
+                        rawImagePath = rawBlob?.relativePath,
+                        jpegSha256 = jpegBlob.sha256,
+                        rawSha256 = rawBlob?.sha256,
+                        apertureCropPath = apertureBlob.relativePath,
                         calibration = calibrationSummary,
-                        moisture = draft.moisture,
-                        moistureCorrection = correction,
+                        moisture = moisture.takeIf {
+                            it.method != com.soilcarbon.engine.domain.model.MoistureMethod.NONE
+                        },
                         soil = settings.toSoilProperties()
                     )
-                )
-                val analyzed = when (outcome) {
-                    is AnalysisOutcome.Rejected -> {
-                        _state.update {
-                            it.copy(
-                                busy = false,
-                                analysisStep = "",
-                                error = outcome.message,
-                                lastSample = null
+
+                    _state.update { it.copy(analysisStep = "Running on-device inference…") }
+                    when (
+                        val outcome = analyzeSample.invoke(
+                            AnalysisInput(
+                                sample = draft,
+                                color = color,
+                                texture = aperture.texture,
+                                covariates = covariates,
+                                calibration = calibrationSummary,
+                                moisture = draft.moisture,
+                                moistureCorrection = correction,
+                                soil = settings.toSoilProperties()
                             )
-                        }
-                        return@launch
+                        )
+                    ) {
+                        is AnalysisOutcome.Rejected -> throw IllegalStateException(outcome.message)
+                        is AnalysisOutcome.Success -> outcome.sample
                     }
-                    is AnalysisOutcome.Success -> outcome.sample
                 }
-                sampleRepository.upsert(analyzed)
 
                 _state.update {
                     it.copy(
@@ -530,6 +521,10 @@ class CaptureViewModel @Inject constructor(
     }
 
     companion object {
+        private const val BLOB_JPEG = "jpeg"
+        private const val BLOB_RAW = "raw"
+        private const val BLOB_APERTURE = "aperture"
+
         fun clampIso(value: Int, info: CameraDeviceInfo?): Int =
             value.coerceIn(info?.isoMin ?: 50, info?.isoMax ?: 6400)
 

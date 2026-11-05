@@ -1,5 +1,7 @@
 package com.soilcarbon.engine.presentation.review
 
+import android.graphics.Bitmap
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,6 +36,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +45,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -76,11 +81,17 @@ fun ReviewScreen(
     }
     val selected = state.selected
     if (selected != null) {
+        DisposableEffect(selected.id) {
+            viewModel.loadEvidence(selected.jpegImagePath)
+            onDispose { viewModel.releaseEvidence() }
+        }
         SampleDetail(
             sample = selected,
             isExporting = state.exporting,
             message = state.exportMessage,
             error = state.error,
+            evidenceImage = state.evidenceImage,
+            evidenceLoading = state.evidenceLoading,
             onBack = { viewModel.select(null) },
             onExport = { viewModel.export(ExportKind.BUNDLE, onlySelected = true) },
             onDelete = viewModel::deleteSelected,
@@ -240,6 +251,8 @@ private fun SampleDetail(
     isExporting: Boolean,
     message: String?,
     error: String?,
+    evidenceImage: Bitmap?,
+    evidenceLoading: Boolean,
     onBack: () -> Unit,
     onExport: () -> Unit,
     onDelete: () -> Unit,
@@ -281,6 +294,31 @@ private fun SampleDetail(
         }
         if (message != null || error != null) {
             item { Banner(text = error ?: message.orEmpty(), error = error != null, onDismiss = {}) }
+        }
+        if (evidenceImage != null) {
+            item {
+                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                    Image(
+                        bitmap = evidenceImage.asImageBitmap(),
+                        contentDescription = "Encrypted capture evidence",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(220.dp)
+                    )
+                }
+            }
+        } else if (evidenceLoading) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(120.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(Modifier.size(28.dp), strokeWidth = 2.dp)
+                }
+            }
         }
         if (sample.prediction?.isDemo == true) {
             item {
@@ -471,8 +509,9 @@ private fun SampleDetail(
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
             title = { Text("Delete sample?") },
-            text = { Text("The encrypted image files remain in secure storage until purged by the OS. " +
-                "The database record and provenance chain entry will be removed.") },
+            text = { Text("The encrypted image files and the database record for this sample are " +
+                "deleted together. If any encrypted file cannot be removed, the sample is kept so " +
+                "you can retry; no orphaned files are left behind.") },
             confirmButton = {
                 TextButton(onClick = {
                     confirmDelete = false

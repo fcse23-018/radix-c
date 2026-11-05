@@ -7,9 +7,12 @@ import com.soilcarbon.engine.domain.model.GeoPoint
 import com.soilcarbon.engine.domain.model.ModelInfo
 import com.soilcarbon.engine.domain.model.SampleStats
 import com.soilcarbon.engine.domain.model.SoilSample
+import com.soilcarbon.engine.domain.model.StoredBlob
 import com.soilcarbon.engine.domain.model.SyncState
 import com.soilcarbon.engine.domain.model.UserRole
 import kotlinx.coroutines.flow.Flow
+import org.soilcarbon.domain.BlobRef
+import java.io.File
 
 interface SampleRepository {
     fun observeSamples(): Flow<List<SoilSample>>
@@ -21,6 +24,25 @@ interface SampleRepository {
     suspend fun count(): Int
     suspend fun setSyncState(id: String, state: SyncState)
     suspend fun markExported(ids: List<String>, atMillis: Long)
+
+    /** Blobs indexed to [id], or null when the sample row itself is missing. */
+    suspend fun blobsFor(id: String): List<StoredBlob>?
+
+    /** Inserts the row and its blob index in one Room transaction. */
+    suspend fun insertWithBlobs(sample: SoilSample, blobs: List<StoredBlob>)
+
+    /** Deletes the row and its blob index in one Room transaction, returning the blobs now orphaned on disk. */
+    suspend fun deleteWithBlobs(id: String): List<StoredBlob>
+
+    /** Every live sample id, used by the startup orphan sweep. */
+    suspend fun allIds(): Set<String>
+}
+
+/** Port over the encrypted file store so the lifecycle service can be unit-tested. */
+interface SampleBlobStore {
+    suspend fun importFile(sampleId: String, kind: String, fileName: String, source: File): StoredBlob
+    suspend fun deleteRef(ref: BlobRef): Boolean
+    suspend fun listRefs(): List<BlobRef>
 }
 
 interface CalibrationRepository {

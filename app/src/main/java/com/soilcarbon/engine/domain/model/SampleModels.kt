@@ -73,6 +73,18 @@ data class CalibrationProfile(
 )
 
 /**
+ * One encrypted file owned by a sample. [kind] is the logical slot (`jpeg`, `raw`, `aperture`),
+ * while [relativePath] is the AES-GCM envelope path inside [com.soilcarbon.engine.data.security.EncryptedFileStore].
+ */
+data class StoredBlob(
+    val sampleId: String,
+    val kind: String,
+    val relativePath: String,
+    val sha256: String,
+    val sizeBytes: Long
+)
+
+/**
  * Complete, self-contained record of one field observation. Everything required to reproduce
  * the SOC estimate is retained: capture conditions, calibration, raw feature vector, covariates,
  * model identity and provenance digest.
