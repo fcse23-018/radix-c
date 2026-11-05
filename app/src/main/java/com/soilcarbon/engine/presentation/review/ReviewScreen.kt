@@ -1,6 +1,8 @@
 package com.soilcarbon.engine.presentation.review
 
 import android.graphics.Bitmap
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -73,6 +75,36 @@ fun ReviewScreen(
     viewModel: ReviewViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    var pendingSaveKind by remember { mutableStateOf<ExportKind?>(null) }
+    var pendingSaveSelectedOnly by remember { mutableStateOf(false) }
+    val saveCopyLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("*/*")
+    ) { uri ->
+        val kind = pendingSaveKind
+        if (uri != null && kind != null) {
+            viewModel.saveCopy(kind, uri, pendingSaveSelectedOnly)
+        }
+        pendingSaveKind = null
+    }
+    val requestSaveCopy: (ExportKind, Boolean) -> Unit = { kind, onlySelected ->
+        pendingSaveKind = kind
+        pendingSaveSelectedOnly = onlySelected
+        saveCopyLauncher.launch(kind.suggestedFileName())
+    }
+
+    LaunchedEffect(viewModel) {
+        viewModel.shareEvents.collect { intent ->
+            runCatching { context.startActivity(intent) }
+                .onFailure {
+                    viewModel.reportExportError(
+                        it.message ?: "No installed app can receive this export."
+                    )
+                }
+        }
+    }
+
     LaunchedEffect(focusSampleId) {
         if (focusSampleId != null) {
             viewModel.select(focusSampleId)
@@ -94,6 +126,7 @@ fun ReviewScreen(
             evidenceLoading = state.evidenceLoading,
             onBack = { viewModel.select(null) },
             onExport = { viewModel.export(ExportKind.BUNDLE, onlySelected = true) },
+            onSaveCopy = { requestSaveCopy(ExportKind.BUNDLE, true) },
             onDelete = viewModel::deleteSelected,
             modifier = modifier
         )
@@ -102,6 +135,7 @@ fun ReviewScreen(
             state = state,
             onSelect = { viewModel.select(it) },
             onExport = { viewModel.export(it) },
+            onSaveCopy = { requestSaveCopy(it, false) },
             onBannerDismiss = viewModel::clearBanners,
             modifier = modifier
         )
@@ -113,6 +147,7 @@ private fun SampleList(
     state: ReviewUiState,
     onSelect: (String) -> Unit,
     onExport: (ExportKind) -> Unit,
+    onSaveCopy: (ExportKind) -> Unit,
     onBannerDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -168,6 +203,10 @@ private fun SampleList(
             onSelect = {
                 showExportDialog = false
                 onExport(it)
+            },
+            onSaveCopy = {
+                showExportDialog = false
+                onSaveCopy(it)
             }
         )
     }
@@ -255,6 +294,7 @@ private fun SampleDetail(
     evidenceLoading: Boolean,
     onBack: () -> Unit,
     onExport: () -> Unit,
+    onSaveCopy: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -485,21 +525,31 @@ private fun SampleDetail(
             }
         }
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
-                    onClick = onExport,
-                    enabled = !isExporting,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    if (isExporting) {
-                        CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-                    } else {
-                        Icon(Icons.Outlined.Share, null, Modifier.size(18.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        onClick = onExport,
+                        enabled = !isExporting,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        if (isExporting) {
+                            CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                        } else {
+                            Icon(Icons.Outlined.Share, null, Modifier.size(18.dp))
+                        }
+                        Spacer(Modifier.size(6.dp))
+                        Text("Share bundle")
                     }
-                    Spacer(Modifier.size(6.dp))
-                    Text("Export bundle")
+                    OutlinedButton(
+                        onClick = onSaveCopy,
+                        enabled = !isExporting,
+                        modifier = Modifier.weight(1f)
+                    ) { Text("Save a copy…") }
                 }
-                OutlinedButton(onClick = { confirmDelete = true }) { Text("Delete") }
+                OutlinedButton(
+                    onClick = { confirmDelete = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("Delete sample") }
             }
         }
         item { Spacer(Modifier.height(30.dp)) }
@@ -581,22 +631,37 @@ private fun Banner(text: String, error: Boolean, onDismiss: () -> Unit) {
 }
 
 @Composable
-private fun ExportDialog(onDismiss: () -> Unit, onSelect: (ExportKind) -> Unit) {
+private fun ExportDialog(
+    onDismiss: () -> Unit,
+    onSelect: (ExportKind) -> Unit,
+    onSaveCopy: (ExportKind) -> Unit
+) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Export samples") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
-                    "Files are written to the app cache and can be shared with any installed app. " +
-                        "CSV is for spreadsheets; GeoJSON for GIS; the bundle retains every scientific field.",
+                    "Share opens the Android chooser with read-only access to the generated file. " +
+                        "Save a copy writes it to a location you choose. CSV is for spreadsheets; " +
+                        "GeoJSON for GIS; the bundle and manifest retain status, degradation and " +
+                        "per-feature provenance.",
                     style = MaterialTheme.typography.bodySmall
                 )
                 ExportKind.entries.forEach { kind ->
-                    FilledTonalButton(
-                        onClick = { onSelect(kind) },
-                        modifier = Modifier.fillMaxWidth()
-                    ) { Text(kind.label) }
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(kind.label, style = MaterialTheme.typography.labelLarge)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            FilledTonalButton(
+                                onClick = { onSelect(kind) },
+                                modifier = Modifier.weight(1f)
+                            ) { Text("Share") }
+                            OutlinedButton(
+                                onClick = { onSaveCopy(kind) },
+                                modifier = Modifier.weight(1f)
+                            ) { Text("Save a copy…") }
+                        }
+                    }
                 }
             }
         },
