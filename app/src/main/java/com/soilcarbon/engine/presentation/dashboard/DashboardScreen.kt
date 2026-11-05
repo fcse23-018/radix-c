@@ -146,11 +146,11 @@ fun DashboardScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Outlined.CloudSync, null)
                         Spacer(Modifier.size(8.dp))
-                        Text("Covariate sync", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                        Text("Refresh covariates", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     }
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "Last sync: ${formatUtc(state.settings.lastSyncAtMillis)}" +
+                        "Last refresh: ${formatUtc(state.settings.lastSyncAtMillis)}" +
                             (state.settings.lastSyncMessage?.let { "\n$it" } ?: ""),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -164,7 +164,7 @@ fun DashboardScreen(
                             CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
                             Spacer(Modifier.size(8.dp))
                         }
-                        Text("Refresh SoilGrids & Sentinel cache")
+                        Text("Refresh covariates now")
                     }
                 }
             }

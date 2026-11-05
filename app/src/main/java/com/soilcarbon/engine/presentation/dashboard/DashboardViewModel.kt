@@ -89,7 +89,7 @@ class DashboardViewModel @Inject constructor(
     fun syncNow() {
         if (_state.value.syncing) return
         if (!_state.value.settings.allowNetworkSync) {
-            _state.update { it.copy(error = "Network sync is disabled in Settings.") }
+            _state.update { it.copy(error = "Network covariate lookup is disabled in Settings.") }
             return
         }
         _state.update { it.copy(syncing = true, error = null, message = null) }
@@ -106,13 +106,13 @@ class DashboardViewModel @Inject constructor(
                 }
                 .onFailure { throwable ->
                     settingsRepository.setSyncResult(
-                        "Sync failed: ${throwable.message}",
+                        "Covariate refresh failed: ${throwable.message}",
                         System.currentTimeMillis()
                     )
                     _state.update {
                         it.copy(
                             syncing = false,
-                            error = throwable.message ?: "Sync failed."
+                            error = throwable.message ?: "Covariate refresh failed."
                         )
                     }
                 }

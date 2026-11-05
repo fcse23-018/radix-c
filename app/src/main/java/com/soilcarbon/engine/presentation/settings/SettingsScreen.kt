@@ -137,9 +137,9 @@ fun SettingsScreen(
             )
         }
         item {
-            SyncCard(
+            RefreshCovariatesCard(
                 state = state,
-                onSync = viewModel::syncNow
+                onRefresh = viewModel::syncNow
             )
         }
         item {
@@ -323,8 +323,8 @@ private fun NetworkModelCard(
             onCheckedChange = { onNetworkPolicy(it, settings.autoSync) }
         )
         ToggleRow(
-            title = "Automatic background sync",
-            subtitle = "Refresh covariate caches with WorkManager when connectivity allows.",
+            title = "Automatic covariate refresh",
+            subtitle = "Refresh SoilGrids, climate and NDVI covariates with WorkManager when connectivity allows.",
             checked = settings.autoSync,
             onCheckedChange = { onNetworkPolicy(settings.allowNetworkSync, it) }
         )
@@ -489,23 +489,23 @@ private fun CalibrationCard(state: SettingsUiState, onClear: () -> Unit) {
 }
 
 @Composable
-private fun SyncCard(state: SettingsUiState, onSync: () -> Unit) {
-    SettingsCard(icon = Icons.Outlined.CloudSync, title = "Covariate sync") {
-        InfoRow("Last sync", formatUtc(state.settings.lastSyncAtMillis))
+private fun RefreshCovariatesCard(state: SettingsUiState, onRefresh: () -> Unit) {
+    SettingsCard(icon = Icons.Outlined.CloudSync, title = "Refresh covariates") {
+        InfoRow("Last refresh", formatUtc(state.settings.lastSyncAtMillis))
         state.settings.lastSyncMessage?.takeIf { it.isNotBlank() }?.let {
             Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Spacer(Modifier.height(8.dp))
-        Button(onClick = onSync, enabled = !state.syncing && state.settings.allowNetworkSync) {
+        Button(onClick = onRefresh, enabled = !state.syncing && state.settings.allowNetworkSync) {
             if (state.syncing) {
                 CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
                 Spacer(Modifier.size(8.dp))
             }
-            Text("Sync now")
+            Text("Refresh now")
         }
         if (!state.settings.allowNetworkSync) {
             Text(
-                "Enable network covariate lookup above to sync.",
+                "Enable network covariate lookup above to refresh.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp)

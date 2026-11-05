@@ -18,6 +18,7 @@ import com.soilcarbon.engine.data.vision.ArUcoTargetDetector
 import com.soilcarbon.engine.data.vision.TargetImageProcessor
 import com.soilcarbon.engine.domain.calibration.CalibrationTargetSpec
 import com.soilcarbon.engine.domain.calibration.TargetDetection
+import com.soilcarbon.engine.domain.capture.CaptureGate
 import com.soilcarbon.engine.domain.model.AppSettings
 import com.soilcarbon.engine.domain.model.CalibrationProfile
 import com.soilcarbon.engine.domain.model.CalibrationSummary
@@ -292,8 +293,8 @@ class CaptureViewModel @Inject constructor(
                 val settings = settingsRepository.current()
                 val existingLocation = _state.value.location
                 val location = existingLocation ?: runCatching { locationProvider.currentLocation() }.getOrNull()
-                if (settings.requireGps && location == null) {
-                    throw IllegalStateException("A GPS fix is required. Move outdoors or disable the GPS gate in Settings.")
+                CaptureGate.gpsError(settings, gpsAvailable = location != null)?.let {
+                    throw IllegalStateException(it)
                 }
                 _state.update { it.copy(location = location ?: it.location) }
 
@@ -302,6 +303,11 @@ class CaptureViewModel @Inject constructor(
                 }
                 if (!captureFiles.jpegSaved) {
                     throw IllegalStateException(captureFiles.error ?: "JPEG capture failed.")
+                }
+                val rawUsable = captureFiles.rawSaved && rawFile.exists() && rawFile.length() > 0
+                // The persisted RAW policy must fail closed: never silently downgrade to JPEG-only.
+                CaptureGate.rawCaptureError(settings, rawSaved = rawUsable)?.let {
+                    throw IllegalStateException(it)
                 }
 
                 _state.update { it.copy(analysisStep = "Detecting the calibration card…") }
@@ -316,11 +322,16 @@ class CaptureViewModel @Inject constructor(
                 }
                 _state.update { it.copy(detection = detection) }
 
+                // The minimum-patch gate is explicit and shared with TargetImageProcessor.
+                CaptureGate.patchError(detection.patchQuads.size)?.let {
+                    throw IllegalStateException(it)
+                }
+
                 _state.update { it.copy(analysisStep = "Fitting the six-patch D65 transfer function…") }
                 val calibration = withContext(Dispatchers.io) {
                     imageProcessor.calibrate(decoded, detection, targetSpec)
                 } ?: throw IllegalStateException(
-                    "Only ${detection.patchQuads.size}/6 calibration patches were measurable. " +
+                    "The calibration transfer function could not be fitted from the measured patches. " +
                         "Flatten the card, avoid glare, and retry."
                 )
 
@@ -388,8 +399,8 @@ class CaptureViewModel @Inject constructor(
                 val exposure = (_state.value.exposure
                     ?: cameraController.deviceInfo?.defaultExposure()
                     ?: CameraExposureParameters()).copy(
-                    rawCaptureAvailable = captureFiles.rawSaved,
-                    rawJpegMode = captureFiles.rawSaved,
+                    rawCaptureAvailable = rawUsable,
+                    rawJpegMode = rawUsable,
                     autoExposureLocked = true,
                     autoWhiteBalanceLocked = true,
                     autoFocusLocked = true
@@ -397,7 +408,7 @@ class CaptureViewModel @Inject constructor(
 
                 val blobSources = buildList {
                     add(BlobSource(BLOB_JPEG, "capture.jpg", jpegFile))
-                    if (captureFiles.rawSaved && rawFile.exists() && rawFile.length() > 0) {
+                    if (rawUsable) {
                         add(BlobSource(BLOB_RAW, "capture.dng", rawFile))
                     }
                     add(BlobSource(BLOB_APERTURE, "aperture.jpg", cropFile))

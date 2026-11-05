@@ -5,6 +5,7 @@ import com.soilcarbon.engine.domain.calibration.CalibrationTargetSpec
 import com.soilcarbon.engine.domain.calibration.CardRect
 import com.soilcarbon.engine.domain.calibration.NormalizedPoint
 import com.soilcarbon.engine.domain.calibration.TargetDetection
+import com.soilcarbon.engine.domain.capture.CaptureGate
 import com.soilcarbon.engine.domain.vision.CalibrationResult
 import com.soilcarbon.engine.domain.vision.ColorFeatures
 import com.soilcarbon.engine.domain.vision.GlcmAnalyzer
@@ -39,7 +40,7 @@ class TargetImageProcessor {
         detection: TargetDetection,
         spec: CalibrationTargetSpec
     ): CalibrationResult? {
-        if (detection.patchQuads.size < 4) return null
+        if (!CaptureGate.patchGatePasses(detection.patchQuads.size)) return null
         val observations = mutableListOf<PatchObservation>()
         for (patch in spec.patches) {
             val quad = detection.patchQuads[patch.id] ?: continue
@@ -66,7 +67,7 @@ class TargetImageProcessor {
                 warped.release()
             }
         }
-        if (observations.size < 4) return null
+        if (!CaptureGate.patchGatePasses(observations.size)) return null
         return RadiometricCalibrator.calibrate(
             observations = observations,
             sourceDescription = "Card ${spec.version}; six-patch affine fit (D65)"

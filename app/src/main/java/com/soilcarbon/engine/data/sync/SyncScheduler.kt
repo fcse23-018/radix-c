@@ -16,8 +16,9 @@ import javax.inject.Singleton
 @Singleton
 class SyncScheduler @Inject constructor(
     @ApplicationContext private val context: Context
-) {
-    fun schedulePeriodic() {
+) : AutoSyncScheduler {
+
+    override fun schedulePeriodic() {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .setRequiresBatteryNotLow(true)
@@ -46,7 +47,7 @@ class SyncScheduler @Inject constructor(
         )
     }
 
-    fun cancel() {
+    override fun cancel() {
         WorkManager.getInstance(context).cancelUniqueWork(CovariateSyncWorker.UNIQUE_NAME)
     }
 }

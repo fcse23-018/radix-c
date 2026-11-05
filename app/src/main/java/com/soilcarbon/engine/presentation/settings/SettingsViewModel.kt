@@ -2,6 +2,7 @@ package com.soilcarbon.engine.presentation.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.soilcarbon.engine.data.sync.AutoSyncCoordinator
 import com.soilcarbon.engine.domain.calibration.CalibrationTargetSpec
 import com.soilcarbon.engine.domain.model.AppSettings
 import com.soilcarbon.engine.domain.model.CalibrationProfile
@@ -38,6 +39,7 @@ class SettingsViewModel @Inject constructor(
     private val calibrationRepository: CalibrationRepository,
     private val covariateRepository: CovariateRepository,
     private val modelRepository: ModelRepository,
+    private val autoSyncCoordinator: AutoSyncCoordinator,
     cardSpec: CalibrationTargetSpec
 ) : ViewModel() {
 
@@ -90,12 +92,19 @@ class SettingsViewModel @Inject constructor(
     fun setNetworkPolicy(allowNetwork: Boolean, autoSync: Boolean) {
         viewModelScope.launch {
             settingsRepository.setNetworkPolicy(allowNetwork, autoSync)
+            // Enqueue or cancel the periodic worker immediately; the toggle now has an effect.
+            val scheduled = autoSyncCoordinator.apply(allowNetwork, autoSync)
             _state.update {
                 it.copy(
-                    message = if (allowNetwork) {
-                        "Network covariate lookups enabled."
-                    } else {
-                        "Offline mode: network lookups disabled."
+                    message = buildString {
+                        append(
+                            if (allowNetwork) "Network covariate lookups enabled."
+                            else "Offline mode: network lookups disabled."
+                        )
+                        append(
+                            if (scheduled) " Automatic covariate refresh scheduled."
+                            else " Automatic covariate refresh stopped."
+                        )
                     }
                 )
             }
@@ -148,7 +157,7 @@ class SettingsViewModel @Inject constructor(
     fun syncNow() {
         if (_state.value.syncing) return
         if (!_state.value.settings.allowNetworkSync) {
-            _state.update { it.copy(error = "Enable network covariate lookup before syncing.") }
+            _state.update { it.copy(error = "Enable network covariate lookup before refreshing.") }
             return
         }
         _state.update { it.copy(syncing = true, error = null, message = null) }
@@ -160,11 +169,11 @@ class SettingsViewModel @Inject constructor(
                 }
                 .onFailure { throwable ->
                     settingsRepository.setSyncResult(
-                        "Sync failed: ${throwable.message}",
+                        "Covariate refresh failed: ${throwable.message}",
                         System.currentTimeMillis()
                     )
                     _state.update {
-                        it.copy(syncing = false, error = throwable.message ?: "Sync failed.")
+                        it.copy(syncing = false, error = throwable.message ?: "Covariate refresh failed.")
                     }
                 }
         }

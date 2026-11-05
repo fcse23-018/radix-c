@@ -27,6 +27,8 @@ import com.soilcarbon.engine.data.repository.RoomSampleRepository
 import com.soilcarbon.engine.data.security.EncryptedBlobStore
 import com.soilcarbon.engine.data.security.EncryptedFileStore
 import com.soilcarbon.engine.data.security.KeystoreSecretStore
+import com.soilcarbon.engine.data.sync.AutoSyncScheduler
+import com.soilcarbon.engine.data.sync.SyncScheduler
 import com.soilcarbon.engine.data.sensors.ImuMonitor
 import com.soilcarbon.engine.data.sensors.LightMonitor
 import com.soilcarbon.engine.data.vision.ArUcoTargetDetector
@@ -211,4 +213,13 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindExportRepository(impl: DefaultExportRepository): ExportRepository
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class SyncModule {
+
+    @Binds
+    @Singleton
+    abstract fun bindAutoSyncScheduler(impl: SyncScheduler): AutoSyncScheduler
 }

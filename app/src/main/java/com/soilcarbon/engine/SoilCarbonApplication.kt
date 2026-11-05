@@ -3,7 +3,7 @@ package com.soilcarbon.engine
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import com.soilcarbon.engine.data.sync.SyncScheduler
+import com.soilcarbon.engine.data.sync.AutoSyncCoordinator
 import com.soilcarbon.engine.domain.usecase.SampleService
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
@@ -20,7 +20,7 @@ class SoilCarbonApplication : Application(), Configuration.Provider {
     lateinit var workerFactory: HiltWorkerFactory
 
     @Inject
-    lateinit var syncScheduler: SyncScheduler
+    lateinit var autoSyncCoordinator: AutoSyncCoordinator
 
     @Inject
     lateinit var sampleService: SampleService
@@ -37,7 +37,13 @@ class SoilCarbonApplication : Application(), Configuration.Provider {
         super.onCreate()
         runCatching { System.loadLibrary("sqlcipher") }
         runCatching { OpenCVLoader.initLocal() }
-        runCatching { syncScheduler.schedulePeriodic() }
+        // Honour the persisted auto-refresh setting instead of always enqueueing periodic work.
+        appScope.launch {
+            runCatching { autoSyncCoordinator.applyCurrent() }
+                .onFailure { error ->
+                    android.util.Log.w(TAG, "Could not apply the automatic covariate refresh policy", error)
+                }
+        }
         // Once per process, before any capture can run: remove legacy orphan blobs.
         appScope.launch {
             runCatching { sampleService.sweepOrphans() }
