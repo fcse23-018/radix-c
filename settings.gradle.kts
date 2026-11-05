@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "SoilCarbonEngine"
 include(":app")
+include(":domain")

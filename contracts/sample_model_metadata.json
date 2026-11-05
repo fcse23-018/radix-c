@@ -1,0 +1,46 @@
+{
+  "model_id": "soc-synthetic-demo",
+  "model_version": "0.1.0",
+  "spec_version": "1.0.0",
+  "feature_order": [
+    "L_star",
+    "a_star",
+    "b_star",
+    "munsell_value",
+    "glcm_contrast",
+    "glcm_energy",
+    "ndvi_satellite",
+    "clay_content_percent"
+  ],
+  "is_placeholder": true,
+  "fallback_features_trained": [
+    "ndvi_satellite"
+  ],
+  "target": {
+    "name": "soc",
+    "unit": "% dry mass",
+    "min": 0.0,
+    "max": 20.0
+  },
+  "training": {
+    "data_sha256": "d1e827d783d1683e7adcf0b6ab6c44e1398b7b31f1906b369fd119f35941bff5",
+    "n_samples": 480,
+    "n_sites": 12,
+    "created_utc": "2026-11-05T14:00:37+00:00",
+    "lab_method": "SYNTHETIC"
+  },
+  "validation": {
+    "scheme": "group-k-fold by site",
+    "r2": 0.8333965275365949,
+    "rmse": 0.4305045088234471,
+    "rpd": 2.452510285714834,
+    "bias": 0.026442206500055222,
+    "passed": false,
+    "thresholds": {
+      "min_r2": 0.5,
+      "min_rpd": 1.5,
+      "min_sites": 5,
+      "max_abs_bias": 0.15
+    }
+  }
+}

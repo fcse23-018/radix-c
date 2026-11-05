@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SOC model metadata (sidecar to soc_model.tflite)",
+  "type": "object",
+  "required": ["model_id", "model_version", "spec_version", "feature_order", "is_placeholder", "target", "training", "validation", "fallback_features_trained"],
+  "additionalProperties": false,
+  "properties": {
+    "model_id": {"type": "string", "minLength": 1},
+    "model_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "spec_version": {"type": "string"},
+    "feature_order": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true},
+    "is_placeholder": {"type": "boolean"},
+    "fallback_features_trained": {"type": "array", "items": {"type": "string"}},
+    "target": {"type": "object", "required": ["name", "unit", "min", "max"], "additionalProperties": false,
+      "properties": {"name": {"type": "string"}, "unit": {"type": "string"}, "min": {"type": "number"}, "max": {"type": "number"}}},
+    "training": {"type": "object", "required": ["data_sha256", "n_samples", "n_sites", "created_utc", "lab_method"], "additionalProperties": false,
+      "properties": {"data_sha256": {"type": "string"}, "n_samples": {"type": "integer", "minimum": 0}, "n_sites": {"type": "integer", "minimum": 0}, "created_utc": {"type": "string"}, "lab_method": {"type": "string"}}},
+    "validation": {"type": "object", "required": ["scheme", "r2", "rmse", "rpd", "bias", "passed", "thresholds"], "additionalProperties": false,
+      "properties": {"scheme": {"type": "string"}, "r2": {"type": "number"}, "rmse": {"type": "number"}, "rpd": {"type": "number"}, "bias": {"type": "number"}, "passed": {"type": "boolean"}, "thresholds": {"type": "object"}}}
+  }
+}

@@ -1,0 +1,7 @@
+numpy
+pandas
+scikit-learn
+pytest
+jsonschema
+# optional, only for TFLite export:
+# tensorflow
