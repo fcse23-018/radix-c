@@ -98,17 +98,20 @@ jobs:
 
       - name: Emulator failure diagnostics
         if: failure()
+        timeout-minutes: 5
+        env:
+          ADB: ${{ env.ANDROID_HOME }}/platform-tools/adb
         run: |
           {
             echo "### Post-failure device state"
             echo
-            echo "- boot_completed: \`$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')\`"
+            echo "- boot_completed: \`$(timeout 20 adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')\`"
             echo "- adb devices:"
             echo '```'
-            adb devices -l || true
+            timeout 20 adb devices -l || true
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
-          adb logcat -d -t 300 2>/dev/null || true
+          timeout 30 adb logcat -d -t 300 2>/dev/null || true
 
       - name: Upload instrumented test reports
         if: always()

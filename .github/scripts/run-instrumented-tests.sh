@@ -7,22 +7,30 @@ summary="${GITHUB_STEP_SUMMARY:-/dev/null}"
 log=/tmp/connected-android-test.log
 report_dir=app/build/outputs/androidTest-results
 
+adb_state=$(timeout 20 adb devices 2>&1 | tr '\n' ' ' || true)
+boot=$(timeout 20 adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+abi=$(timeout 20 adb shell getprop ro.product.cpu.abi 2>/dev/null | tr -d '\r' || true)
+echo "::notice title=instrumented-start::adb='${adb_state}' boot='${boot}' abi='${abi}'"
+
 {
   echo "### Instrumented test diagnostics"
   echo
-  echo "- boot_completed: \`$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')\`"
-  echo "- abi: \`$(adb shell getprop ro.product.cpu.abi 2>/dev/null | tr -d '\r')\`"
+  echo "- boot_completed: \`${boot}\`"
+  echo "- abi: \`${abi}\`"
   echo "- kvm: \`$(ls -l /dev/kvm 2>/dev/null || echo missing)\`"
   echo "- adb devices:"
   echo '```'
-  adb devices -l || true
+  echo "${adb_state}"
   echo '```'
 } >>"$summary"
 
 set +e
-bash ./gradlew connectedDebugAndroidTest --stacktrace 2>&1 | tee "$log"
+timeout 2400 bash ./gradlew connectedDebugAndroidTest --stacktrace 2>&1 | tee "$log"
 status=${PIPESTATUS[0]}
 set -e
+
+xml_count=$(find "$report_dir" -name '*.xml' 2>/dev/null | wc -l | tr -d ' ')
+echo "::notice title=instrumented-end::gradle_exit=${status} xml_files=${xml_count}"
 
 python3 - "$report_dir" "$log" "$summary" <<'PY'
 import glob
@@ -54,7 +62,7 @@ for path in files:
 with open(summary, "a", encoding="utf-8") as out:
     out.write("\n### Instrumented test results\n\n")
     if not rows:
-        out.write("No test XML was produced; the emulator or install step failed before tests ran.\n")
+        out.write("No test XML was produced; the emulator, install or build step failed before tests ran.\n")
     for name, detail, ok in rows:
         suffix = "" if ok else f": {detail}"
         out.write(f"- {'PASS' if ok else 'FAIL'} `{name}`{suffix}\n")
@@ -62,22 +70,18 @@ with open(summary, "a", encoding="utf-8") as out:
 for name, message in failures:
     print(f"::error title={name}::{message}")
 if not files:
-    print("::error title=instrumented::No androidTest XML results were produced")
-
-if not rows:
     with open(log_path, encoding="utf-8", errors="replace") as handle:
-        tail = handle.read().splitlines()[-80:]
-    print("::group::Last Gradle lines")
-    print("\n".join(tail))
-    print("::endgroup::")
+        tail = handle.read().splitlines()[-30:]
+    escaped = "%0A".join(line.replace("%", "%25").replace("\r", "") for line in tail)
+    print(f"::error title=instrumented::No androidTest XML produced. Gradle tail: {escaped}")
 PY
 
 if [ "$status" -ne 0 ]; then
   echo "::group::Last 150 Gradle lines"
-  tail -n 150 "$log" || true
+  timeout 20 tail -n 150 "$log" || true
   echo "::endgroup::"
   echo "::group::Recent logcat"
-  adb logcat -d -t 400 2>/dev/null | tail -n 200 || true
+  timeout 30 adb logcat -d -t 400 2>/dev/null | tail -n 200 || true
   echo "::endgroup::"
 fi
 
