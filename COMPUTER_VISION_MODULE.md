@@ -1,4 +1,8 @@
-# Computer Vision Module - Implementation Summary
+# Computer Vision Module - Design Note
+
+> **Status: historical design note — not a description of shipped code.** This file predates the
+> SoilCarbon Engine Android integration and refers to `shared/vision/*` classes that do not exist in
+> this repository. See `README.md` for current behaviour.
 
 ## Overview
 The Computer Vision Module has been implemented with OpenCV integration for ArUco detection, color space conversions, and GLCM texture feature extraction.

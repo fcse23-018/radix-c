@@ -1,4 +1,7 @@
-# Subscription Management UI - Implementation Summary
+# Subscription Management UI - Design Note
+
+> **Status: historical design note — not implemented.** No subscription, billing, paywall or trial
+> code exists in this repository. The `shared/*` files referenced below are not part of the app.
 
 ## Overview
 Complete subscription management system with paywall, subscription selection, and trial flow implementation.

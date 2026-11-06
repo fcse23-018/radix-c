@@ -1,4 +1,9 @@
-# Data Export Module - Implementation Summary
+# Data Export Module - Design Note
+
+> **Status: historical design note — not a description of shipped code.** This file predates the
+> SoilCarbon Engine Android integration and claims KML support that the app does not provide. The
+> shipped exporter supports CSV, GeoJSON, a full JSON bundle and a provenance manifest. See
+> `README.md` and `ExportMapper.kt`.
 
 ## Overview
 Complete data export system supporting GeoJSON, KML, and CSV formats for soil sample data.

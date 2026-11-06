@@ -1,5 +1,10 @@
 # GDPR Compliance Implementation - TerroChroma
 
+> **Status: historical template — not a compliance statement for this app.** This document assumes
+> Firebase analytics, crash reporting, notifications and cloud sync that are not implemented. The
+> current app stores samples locally with SQLCipher and AES-GCM evidence encryption, and only sends
+> sample coordinates to covariate services when the user enables network lookup.
+
 ## Overview
 
 TerroChroma is fully compliant with the General Data Protection Regulation (GDPR) and other applicable privacy laws. This document outlines the implementation details.

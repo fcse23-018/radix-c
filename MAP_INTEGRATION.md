@@ -1,4 +1,8 @@
-# Map Integration - Implementation Summary
+# Map Integration - Design Note
+
+> **Status: historical design note — not a description of shipped code.** This file predates the
+> SoilCarbon Engine Android integration and refers to Mapbox/MapKit. The app uses osmdroid with
+> OpenStreetMap tiles in `presentation/map/MapScreen.kt`.
 
 ## Overview
 Map integration with Mapbox (Android) and MapKit (iOS) for displaying soil samples with SOC color-coded pins.

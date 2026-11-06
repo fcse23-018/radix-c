@@ -1,5 +1,10 @@
 # Play Store Readiness Check - TerroChroma
 
+> **Status: historical template — partly inaccurate for SoilCarbon Engine.** This checklist was
+> written for the older TerroChroma KMP prototype. Its permission table, billing/BLE/cloud-sync
+> claims and signing instructions have been corrected only where noted below; use `README.md` and
+> `app/src/main/AndroidManifest.xml` as the source of truth.
+
 ## ✅ Passed Requirements
 
 ### 1. Target API Level
@@ -17,43 +22,27 @@ All permissions are properly declared with runtime rationale in code:
 | CAMERA | ✅ | Required for soil sample capture |
 | ACCESS_FINE_LOCATION | ✅ | GPS tagging of samples |
 | ACCESS_COARSE_LOCATION | ✅ | GPS tagging (coarse) |
-| BLUETOOTH_SCAN | ✅ | NIR spectrometer (Android 12+) |
-| BLUETOOTH_CONNECT | ✅ | NIR spectrometer (Android 12+) |
-| INTERNET | ✅ | Cloud sync with ISRIC SoilGrids |
-| ACCESS_NETWORK_STATE | ✅ | Network connectivity check |
-| FOREGROUND_SERVICE | ✅ | Background ML inference |
-| FOREGROUND_SERVICE_CAMERA | ✅ | Camera foreground service |
-| USE_BIOMETRIC | ✅ | Optional app lock |
-| READ_MEDIA_IMAGES | ✅ | Image access (Android 13+) |
+| INTERNET | ✅ | Optional point covariate lookup (SoilGrids / Open-Meteo / Sentinel) |
+| ACCESS_NETWORK_STATE | ✅ | Network availability check |
 
 **Notes:**
-- Storage permissions limited to API 32 (scoped storage)
-- Legacy Bluetooth permissions limited to API 30
-- All permissions have clear purpose in app
+- These are the only permissions declared in `app/src/main/AndroidManifest.xml`.
+- Bluetooth/NIR, notifications, foreground-service, biometric and media permissions are **not**
+  declared because no such feature ships.
+- Network access is used only for optional covariate lookup; samples and images are not uploaded.
 
 ### 3. App Signing
-**Status**: ⚠️ REQUIRES SETUP
-- **ProGuard**: Enabled for release builds
-- **Signing**: Not configured (needs keystore setup)
+**Status**: ⚠️ REQUIRES SECRETS
+- **R8/ProGuard + resource shrinking**: Enabled for release builds
+- **Signing**: Configured through environment variables; unsigned when absent
+- **App Bundle**: `bundleRelease` enabled with ABI splitting in CI
 
-**Required for Release:**
-```gradle
-buildTypes {
-    release {
-        isMinifyEnabled = true
-        proguardFiles(...)
-        signingConfig = signingConfigs.release
-    }
-}
-
-signingConfigs {
-    create("release") {
-        storeFile = file("keystore.jks")
-        storePassword = "your_password"
-        keyAlias = "your_key_alias"
-        keyPassword = "your_key_password"
-    }
-}
+**Required for a signed release:**
+```bash
+SOILCARBON_KEYSTORE_PATH=/path/to/release.keystore
+SOILCARBON_KEYSTORE_PASSWORD=...
+SOILCARBON_KEY_ALIAS=...
+SOILCARBON_KEY_PASSWORD=...
 ```
 
 ### 4. App Icon
@@ -228,39 +217,35 @@ actual fun getEncryptionKey(): String {
 - Back navigation handled
 
 ### 4. Permissions
-- All required permissions declared
-- Scoped storage compliance
-- Runtime permission ready
+- Camera, fine/coarse location, internet and network-state only
+- Scoped-storage compliant; no storage/media permissions
+- Runtime permission flow implemented for camera and location
 
 ### 5. Database
-- SQLDelight with SQLCipher
-- AES-256 encryption
-- Proper schema with indexes
-- CRUD operations complete
+- Room with SQLCipher open-helper factory
+- AES-256 encrypted evidence blobs
+- Schema and indexes present
+- Transactional sample + blob lifecycle
 
 ### 6. Billing
-- Google Play Billing Library 7+
-- StoreKit 2 ready
-- Subscription UI complete
+- **Not implemented.** No billing library, paywall or subscription code ships.
 
 ### 7. Export
-- GeoJSON, KML, CSV formats
-- RFC-compliant implementations
-- SOC color coding
+- CSV, GeoJSON, full JSON bundle and provenance manifest
+- CSV escaping and header/row lockstep covered by JVM tests
+- KML is not implemented
 
 ### 8. Cloud Sync
-- WCS implementation (production-recommended)
-- Earth Engine API integration
-- Offline-first architecture
+- **Not implemented.** No sample upload or account backend; `CLOUD_SYNC_WCS.md` is a design note.
+- Optional point covariate lookup uses SoilGrids/Open-Meteo/Sentinel, not a sync service.
 
 ### 9. BLE
-- Kable integration
-- Data fusion with EPO
-- Moisture correction
+- **Not implemented.** No Bluetooth permissions or BLE code.
 
 ### 10. Testing
-- Unit tests for critical algorithms
-- Test infrastructure complete
+- 94 JVM tests pass (`./gradlew test`)
+- 9 instrumented tests compile; they require a physical device/emulator
+- NFR-1 and NFR-2 device tests are included but have not produced device results
 
 ## 📋 Play Store Submission Checklist
 
@@ -283,7 +268,6 @@ actual fun getEncryptionKey(): String {
 - [ ] Verify battery usage is reasonable
 - [ ] Test on multiple device sizes
 - [ ] Test on Android 10-15
-- [ ] Verify subscription flow works
 - [ ] Verify export functionality
 - [ ] Verify database encryption
 - [ ] Verify permissions work correctly

@@ -1,5 +1,10 @@
 # TerroChroma - Final Implementation Status
 
+> **Status: historical document — superseded.** This is a status snapshot from the older TerroChroma
+> Kotlin Multiplatform prototype, not the SoilCarbon Engine app in this repository. Claims about
+> cloud sync, BLE/NIR, subscriptions or `shared/*` modules do not describe shipped code. See
+> `README.md` for current capabilities and its “Not implemented” section.
+
 ## Project Overview
 TerroChroma is a production-ready Kotlin Multiplatform application for soil carbon sensing. The project has been built following the master prompt's requirements with Clean Architecture, expect/actual patterns, and Material 3 design.
 

@@ -1,5 +1,9 @@
 # TerroChroma - Project Status
 
+> **Status: historical document — superseded.** This describes the older TerroChroma Kotlin
+> Multiplatform prototype. Cloud sync, BLE/NIR and the listed `shared/*` files are not implemented
+> in this app. See `README.md` for the current status.
+
 ## ✅ Completed Components
 
 ### 1. Project Structure

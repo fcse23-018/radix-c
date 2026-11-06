@@ -1,5 +1,11 @@
 # TerroChroma Privacy Policy
 
+> **Status: historical template — do not publish as-is.** This policy describes an older
+> TerroChroma design with Firebase analytics, billing, iOS and cloud sync, none of which exist in
+> SoilCarbon Engine. The implemented network behaviour is limited to optional point covariate
+> lookups: with network lookup enabled, sample coordinates are sent to SoilGrids, Open-Meteo and
+> Sentinel. No image or sample record is uploaded. See `README.md` for current data handling.
+
 **Last Updated**: October 18, 2026  
 **Effective Date**: October 18, 2026
 

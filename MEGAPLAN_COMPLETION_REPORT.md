@@ -1,5 +1,10 @@
 # TerroChroma Megaplan - Completion Report
 
+> **Status: historical document — superseded and not accurate for this repository.** The “complete”
+> cloud-sync and BLE/NIR phases described below refer to the older TerroChroma KMP design and do not
+> exist in SoilCarbon Engine. See `README.md` for current capabilities and its “Not implemented”
+> section.
+
 ## Executive Summary
 
 All 6 phases of the TerroChroma megaplan have been successfully implemented. The application now includes:
