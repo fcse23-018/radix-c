@@ -34,7 +34,7 @@
 | `assembleRelease` + `bundleRelease` | **Passed** with R8 and resource shrinking |
 | Env-var signing | **Verified** with an ephemeral key: `apksigner` and `jarsigner` both exit 0; test key deleted afterward |
 | Instrumented tests on device | **Not run** — the available AVD crashes under software emulation (`0xC0000005`) because no hypervisor driver is installed |
-| GitHub Actions workflow | Updated; **not executed on GitHub yet** |
+| GitHub Actions workflow | **Passed** — [run 42152516043](https://github.com/fcse23-018/radix-c/actions/runs/42152516043) at `7e9c9e8`: `kotlin` job (JDK 21 unit tests, `assembleRelease`, `bundleRelease`, artifact upload) and `python` job both succeeded; `soilcarbon-release` artifact uploaded |
 
 Instrumented tests that remain device-only:
 
