@@ -127,13 +127,27 @@ gradlew.bat :app:testDebugUnitTest
 The suite covers CIE colour conversion, GLCM normalisation, radiometric affine fitting, feature
 vector ordering/clamping and provenance hashing.
 
+### Device tests
+
+```bat
+gradlew.bat :app:connectedDebugAndroidTest
+```
+
+The nine instrumented tests cover the encrypted sample lifecycle, FileProvider URI/read grants,
+NFR-1 inference latency and NFR-2 capacity for 1,000 local-only samples in SQLCipher. CI runs them
+on an API 34 x86_64 KVM emulator (`/dev/kvm` is available on GitHub-hosted Linux runners). A
+physical device is still required for camera/RAW/IMU/GNSS behaviour and for performance figures
+representative of real field hardware.
+
 ### Release
 
 ```bat
 gradlew.bat :app:assembleRelease
 ```
 
-Release builds enable R8 and resource shrinking. Provide a signing config before distribution.
+Release builds enable R8 and resource shrinking. Signing is supplied through the
+`SOILCARBON_KEYSTORE_PATH`, `SOILCARBON_KEYSTORE_PASSWORD`, `SOILCARBON_KEY_ALIAS` and
+`SOILCARBON_KEY_PASSWORD` environment variables; artifacts are unsigned when they are absent.
 SQLCipher native libraries and the `tflite` asset are kept uncompressed by the packaging rules.
 
 ---

@@ -1,8 +1,8 @@
 # SoilCarbon Core Integration — Final Audit
 
-**Branch:** `feat/soilcarbon-core`  
-**Baseline:** `a5e8c92`  
-**Final integration commit:** `aedf360`  
+**Branch:** `feat/soilcarbon-core`
+**Baseline:** `a5e8c92`
+**Latest verified code commit:** `f50fc3f`
 **Date:** 6 November 2026
 
 ## Deliverable status
@@ -11,14 +11,14 @@
 |---|---|---|
 | Step 0 — scaffold/app comparison; real 8-feature contract | **FIXED** | `contracts/feature_spec.json` rewritten to `L_star`, `a_star`, `b_star`, `munsell_value`, `glcm_contrast`, `glcm_energy`, `ndvi_satellite`, `clay_content_percent`; `dce56d7` |
 | Step 1 — contracts, training, architecture, CI, pure-JVM `domain` | **FIXED** | `domain` module via version catalog; app depends on it; `dce56d7` |
-| Step 2 — single `AnalyzeSample` inference path, TFLite, metadata, delegates, placeholder policy | **FIXED** | `TfliteSocModel`, `FeatureInputFactory`, `AnalyzeSampleUseCase`; debug `ALLOW_DEMO`, release `BLOCK`; `e8fb65d` |
-| Step 3 — encrypted blob delete/list, transactional lifecycle, orphan sweep, review evidence | **FIXED** (JVM-verified) | `@Transaction` sample + blob operations, `PartialFailure`, startup `sweepOrphans()`; `ff1c25a` |
-| Step 3 device round-trip / fault injection | **PARTIAL** | 3 instrumented tests written and compiled; no working device/emulator |
+| Step 2 — single `AnalyzeSample` inference path, TFLite, metadata, delegates, placeholder policy | **FIXED** | `TfliteSocModel`, `FeatureInputFactory`, `AnalyzeSampleUseCase`; debug `ALLOW_DEMO`, release `BLOCK`; `e8fb65d`; device-load defect fixed in `dabba65` |
+| Step 3 — encrypted blob delete/list, transactional lifecycle, orphan sweep, review evidence | **FIXED** | `@Transaction` sample + blob operations, `PartialFailure`, startup `sweepOrphans()`; `ff1c25a`; device defect fixed in `dabba65` |
+| Step 3 device round-trip / fault injection | **FIXED (device-verified)** | 3 instrumented tests pass in CI run `42177119114` |
 | Step 4 — RAW gate, GPU toggle, auto-refresh, patch gate wiring | **FIXED** | `CaptureGate`, `AutoSyncCoordinator`, `GpuPreference`; UI renamed **Refresh covariates**; `fc4482c` |
-| Step 5 — FileProvider sharing, SAF copy, required export fields | **FIXED** (JVM-verified) | `ExportSharer`, `ExportMapper`, narrowed provider paths, 45-column CSV; `d2837d2` |
-| Step 5 device URI / grant test | **PARTIAL** | 4 instrumented tests written and compiled; not run |
+| Step 5 — FileProvider sharing, SAF copy, required export fields | **FIXED** | `ExportSharer`, `ExportMapper`, narrowed provider paths, 45-column CSV; `d2837d2` |
+| Step 5 device URI / grant test | **FIXED (device-verified)** | 4 instrumented tests pass in CI run `42177119114` |
 | Step 6 — remove unsupported claims | **FIXED** | False permissions/role/README claims removed; legacy docs marked historical; `2773d1c` plus documentation follow-up |
-| Step 7 — CI, release build, signing, App Bundle, R8, NFR tests | **FIXED** (device NFRs partial) | JDK 21 CI, env-var signing, `bundleRelease`, R8; `aedf360` |
+| Step 7 — CI, release build, signing, App Bundle, R8, NFR tests | **FIXED** | JDK 21 CI, env-var signing, `bundleRelease`, R8, KVM device-test job; `aedf360`, device/NFR results from `f50fc3f` |
 | Validated production model | **NOT DONE** | Placeholder remains; requires field data and ISO 10694 validation |
 | Cloud upload / account sync | **NOT DONE** | No backend; design note only |
 | Agronomist overlays; data-scientist model management, spectral sync, batch reprocessing | **REMOVED-FROM-UI** | No implementation or feature claim remains |
@@ -32,16 +32,36 @@
 | `python -m pytest training/tests -q` | **Passed** — 8 tests |
 | `:app:compileDebugAndroidTestKotlin` | **Passed** — 9 instrumented tests compile |
 | `assembleRelease` + `bundleRelease` | **Passed** with R8 and resource shrinking |
-| Env-var signing | **Verified** with an ephemeral key: `apksigner` and `jarsigner` both exit 0; test key deleted afterward |
-| Instrumented tests on device | **Not run** — the available AVD crashes under software emulation (`0xC0000005`) because no hypervisor driver is installed |
-| GitHub Actions workflow | **Passed** — [run 42152516043](https://github.com/fcse23-018/radix-c/actions/runs/42152516043) at `7e9c9e8`: `kotlin` job (JDK 21 unit tests, `assembleRelease`, `bundleRelease`, artifact upload) and `python` job both succeeded; `soilcarbon-release` artifact uploaded |
+| Env-var signing | **Verified locally** with an ephemeral key: `apksigner` and `jarsigner` both exit 0; test key deleted afterward. CI now verifies the signature when secrets exist |
+| Instrumented tests | **Passed — 9/9** on an API 34 `google_apis` x86_64 emulator with KVM (CI run `42177119114`) |
+| NFR-1 inference latency | **Passed** — median **0.208 ms**, p95 **0.313 ms** over 50 runs; limit 2,000 ms. CPU/NNAPI path, model inference only |
+| NFR-2 offline capacity | **Passed** — 1,000 local-only samples inserted, closed, reopened and counted; plaintext probe absent; 1 database file; 2,787 ms total |
+| GitHub Actions workflow | **Passed** — [run 42177119114](https://github.com/fcse23-018/radix-c/actions/runs/42177119114) at `f50fc3f`: `kotlin`, `python` and `instrumented` jobs all succeeded; release artifact uploaded |
+| Local emulator | **Still unavailable** — VT-x is disabled in firmware and the session has no administrator rights; the AVD crashes under software emulation (`0xC0000005`). Device tests therefore run on GitHub-hosted Linux runners |
 
-Instrumented tests that remain device-only:
+The device suite covers all nine tests:
 
-- `SampleLifecycleInstrumentedTest` — 3 tests: encrypted create/delete round-trip and delete-failure recovery.
+- `SampleLifecycleInstrumentedTest` — 3 tests: encrypted create/delete round-trip, delete-failure recovery, and orphan sweep.
 - `ExportShareInstrumentedTest` — 4 tests: FileProvider URI resolution, read grant, chooser, path rejection.
-- `InferenceLatencyInstrumentedTest` — NFR-1, 50 CPU/NNAPI inferences after warm-up; median and p95 must be under 2.0 s. Measures model inference only.
-- `OfflineCapacityInstrumentedTest` — NFR-2, 1,000 local-only samples in a SQLCipher Room database, close/reopen, and plaintext-absence check.
+- `InferenceLatencyInstrumentedTest` — NFR-1, 5 warm-up and 50 measured CPU/NNAPI inferences.
+- `OfflineCapacityInstrumentedTest` — NFR-2, 1,000 local-only samples in a SQLCipher Room database, close/reopen, plaintext-absence check.
+
+The NFR numbers above are functional evidence on an emulated device. They are not a substitute for a
+benchmark on the target mid-tier physical phone.
+
+## Defects found by the device suite and fixed
+
+Running the suite in CI exposed two defects that the JVM suite could not see:
+
+1. **Every encrypted file write failed on Android.** `EncryptedFileStore` supplied a caller-generated
+   IV to an Android Keystore key created with randomized encryption required, which throws
+   `InvalidAlgorithmParameterException`. Fixed in `dabba65` by letting the Keystore cipher generate
+   the IV and storing it in the envelope; decryption still uses the stored IV.
+2. **Every model load failed on Android.** `TfliteSocModel` passed a heap `ByteBuffer` to
+   `Interpreter`, which requires a direct buffer, so GPU, NNAPI and CPU delegates all failed. Fixed
+   in `dabba65` with a direct buffer (duplicated per delegate attempt) and a surfaced root cause.
+3. **Orphan-sweep test fixture was invalid.** The test created a live sample with no blobs, then
+   expected a blob to remain. Fixed in `d308f52` to create the live sample with a blob.
 
 ## Release size
 
@@ -77,7 +97,11 @@ The AAB is configured for ABI/density/language splits. Local release output is u
 ## Remaining user / hardware needs
 
 1. A validated field dataset and trained model, validated against ISO 10694.
-2. A physical Android device or a host with a working hypervisor to run the 9 instrumented tests and record NFR-1/NFR-2 results.
-3. Release keystore plus `SOILCARBON_KEYSTORE_BASE64`, `SOILCARBON_KEYSTORE_PASSWORD`, `SOILCARBON_KEY_ALIAS` and `SOILCARBON_KEY_PASSWORD` secrets for signed CI artifacts.
+2. A physical mid-tier Android device to confirm NFR-1 latency under real thermal/CPU conditions and
+   to exercise camera/RAW/IMU/GNSS paths that an emulator cannot represent.
+3. A production release keystore plus `SOILCARBON_KEYSTORE_BASE64`,
+   `SOILCARBON_KEYSTORE_PASSWORD`, `SOILCARBON_KEY_ALIAS` and `SOILCARBON_KEY_PASSWORD` repository
+   secrets. Without them CI uploads unsigned artifacts; the workflow now verifies signatures when
+   they are present.
 4. A Sentinel Hub token if satellite NDVI is required; otherwise NDVI remains at the documented default.
 5. A decision on whether the current model-gate thresholds suit the deployment region.
