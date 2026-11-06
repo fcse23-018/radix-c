@@ -99,6 +99,7 @@ class OfflineCapacityInstrumentedTest {
             "NFR-2 samples=$SAMPLE_COUNT databaseFiles=${databaseFiles.size} " +
                 "reopenCount=$SAMPLE_COUNT plaintextAbsent=true totalMs=$elapsedMs"
         )
+        Unit
     }
 
     private fun openDatabase(passphrase: ByteArray): SoilCarbonDatabase =

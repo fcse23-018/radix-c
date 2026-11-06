@@ -56,26 +56,29 @@ class InferenceLatencyInstrumentedTest {
         // Warm up interpreter load and the delegate chain; NFR-1 covers inference, not startup.
         repeat(WARMUP_RUNS) { model.predict(features) }
 
-        val latenciesMs = LongArray(MEASURED_RUNS) {
+        // Measure in microseconds: the placeholder model can run in well under one millisecond.
+        val latenciesUs = LongArray(MEASURED_RUNS) {
             val started = System.nanoTime()
             model.predict(features)
-            (System.nanoTime() - started) / 1_000_000
+            (System.nanoTime() - started) / 1_000
         }.sorted()
 
-        val median = latenciesMs[latenciesMs.size / 2]
-        val p95 = latenciesMs[(latenciesMs.size * 95 / 100).coerceAtMost(latenciesMs.lastIndex)]
+        val medianUs = latenciesUs[latenciesUs.size / 2]
+        val p95Us = latenciesUs[(latenciesUs.size * 95 / 100).coerceAtMost(latenciesUs.lastIndex)]
+        val medianMs = medianUs / 1_000.0
+        val p95Ms = p95Us / 1_000.0
 
         Log.i(
             "SoilCarbonNFR",
-            "NFR-1 medianMs=$median p95Ms=$p95 runs=$MEASURED_RUNS limitMs=$NFR_LIMIT_MS"
+            "NFR-1 medianMs=$medianMs p95Ms=$p95Ms runs=$MEASURED_RUNS limitMs=${NFR_LIMIT_US / 1_000}"
         )
-        assertThat(median).isLessThan(NFR_LIMIT_MS)
-        assertThat(p95).isLessThan(NFR_LIMIT_MS)
+        assertThat(medianUs).isLessThan(NFR_LIMIT_US)
+        assertThat(p95Us).isLessThan(NFR_LIMIT_US)
     }
 
     private companion object {
         const val WARMUP_RUNS = 5
         const val MEASURED_RUNS = 50
-        const val NFR_LIMIT_MS = 2_000L
+        const val NFR_LIMIT_US = 2_000_000L
     }
 }
