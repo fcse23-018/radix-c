@@ -90,17 +90,19 @@ if not files:
     print(f"::error title=instrumented::No androidTest XML produced. Gradle tail: {escaped}")
 PY
 
-# NFR tests persist their measurements in the app's private files directory. Debug builds allow
-# `run-as`, which keeps the numbers out of logcat and in the public run annotations.
-for metric_file in nfr1-results.txt nfr2-results.txt; do
-  metric=$(timeout 20 adb shell run-as com.soilcarbon.engine cat "files/$metric_file" 2>/dev/null | tr -d '\r' || true)
-  if [ -n "$metric" ]; then
-    while IFS= read -r line; do
-      [ -n "$line" ] && echo "::notice title=metric::$line"
-    done <<<"$metric"
-    printf '\n- METRIC `%s`\n' "$metric" >>"$summary"
-  fi
-done
+# NFR tests log their measurements under a dedicated tag; logcat remains readable over adb after
+# the test process exits.
+metrics=$(timeout 30 adb logcat -d -s SoilCarbonNFR:I 2>/dev/null |
+  sed -n 's/.*\(NFR-[12] .*\)/\1/p' | tr -d '\r' || true)
+if [ -n "$metrics" ]; then
+  while IFS= read -r line; do
+    [ -n "$line" ] && echo "::notice title=metric::$line"
+  done <<<"$metrics"
+  printf '\n' >>"$summary"
+  while IFS= read -r line; do
+    [ -n "$line" ] && printf -- '- METRIC `%s`\n' "$line" >>"$summary"
+  done <<<"$metrics"
+fi
 
 if [ "$status" -ne 0 ]; then
   echo "::group::Last 150 Gradle lines"
