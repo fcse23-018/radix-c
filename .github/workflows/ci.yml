@@ -77,6 +77,12 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      - name: Verify KVM access
+        run: |
+          ls -l /dev/kvm
+          test -r /dev/kvm
+          test -w /dev/kvm
+
       - name: Instrumented tests on emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -88,7 +94,21 @@ jobs:
           heap-size: 512M
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: bash ./gradlew connectedDebugAndroidTest
+          script: bash .github/scripts/run-instrumented-tests.sh
+
+      - name: Emulator failure diagnostics
+        if: failure()
+        run: |
+          {
+            echo "### Post-failure device state"
+            echo
+            echo "- boot_completed: \`$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')\`"
+            echo "- adb devices:"
+            echo '```'
+            adb devices -l || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          adb logcat -d -t 300 2>/dev/null || true
 
       - name: Upload instrumented test reports
         if: always()
