@@ -9,6 +9,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.File
 
 /**
  * NFR-1: "On-device Machine Learning inference (SOC % prediction from a single captured sample)
@@ -23,10 +24,12 @@ class InferenceLatencyInstrumentedTest {
 
     private lateinit var context: Context
     private lateinit var model: TfliteSocModel
+    private lateinit var metricsFile: File
 
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
+        metricsFile = File(context.filesDir, "nfr1-results.txt").apply { writeText("") }
         // Force the CPU/NNAPI path so the measurement is not flattered by a GPU delegate.
         model = TfliteSocModel(context) { false }
     }
@@ -65,6 +68,9 @@ class InferenceLatencyInstrumentedTest {
         val p95 = latenciesMs[(latenciesMs.size * 95 / 100).coerceAtMost(latenciesMs.lastIndex)]
 
         println("NFR-1 medianMs=$median p95Ms=$p95 runs=$MEASURED_RUNS limitMs=$NFR_LIMIT_MS")
+        metricsFile.writeText(
+            "NFR-1 medianMs=$median p95Ms=$p95 runs=$MEASURED_RUNS limitMs=$NFR_LIMIT_MS\n"
+        )
         assertThat(median).isLessThan(NFR_LIMIT_MS)
         assertThat(p95).isLessThan(NFR_LIMIT_MS)
     }

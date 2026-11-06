@@ -16,6 +16,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.File
 import java.util.UUID
 
 /**
@@ -30,11 +31,13 @@ import java.util.UUID
 class OfflineCapacityInstrumentedTest {
 
     private lateinit var context: Context
+    private lateinit var metricsFile: File
     private val databaseName = "nfr2-${UUID.randomUUID()}.db"
 
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
+        metricsFile = File(context.filesDir, "nfr2-results.txt").apply { writeText("") }
         // The production Application loads this; make the test independently runnable too.
         runCatching { System.loadLibrary("sqlcipher") }
         context.deleteDatabase(databaseName)
@@ -47,6 +50,7 @@ class OfflineCapacityInstrumentedTest {
 
     @Test
     fun nfr2_oneThousandUnsyncedSamplesFitInTheEncryptedDatabase() = runBlocking {
+        val startedAt = System.nanoTime()
         val passphrase = "nfr2-test-passphrase".toByteArray()
         val database = openDatabase(passphrase)
         try {
@@ -92,6 +96,11 @@ class OfflineCapacityInstrumentedTest {
             assertThat(String(bytes, Charsets.ISO_8859_1)).doesNotContain(probe)
         }
         println("NFR-2 samples=$SAMPLE_COUNT databaseFiles=${databaseFiles.size} reopenCount=$SAMPLE_COUNT plaintextAbsent=true")
+        val elapsedMs = (System.nanoTime() - startedAt) / 1_000_000
+        metricsFile.writeText(
+            "NFR-2 samples=$SAMPLE_COUNT databaseFiles=${databaseFiles.size} " +
+                "reopenCount=$SAMPLE_COUNT plaintextAbsent=true totalMs=$elapsedMs\n"
+        )
     }
 
     private fun openDatabase(passphrase: ByteArray): SoilCarbonDatabase =
