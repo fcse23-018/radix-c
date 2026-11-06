@@ -118,7 +118,10 @@ class SampleLifecycleInstrumentedTest {
 
     @Test
     fun startupSweepRemovesOnlyBlobsWithoutARow() = runBlocking {
-        service.create("live", emptyList()) { SoilSample(id = "live") }
+        service.create(
+            "live",
+            listOf(BlobSource("raw", "capture.dng", tempFile("live.dng", byteArrayOf(1))))
+        ) { SoilSample(id = "live") }
         blobStore.importFile("ghost", "raw", "capture.dng", tempFile("ghost.dng", byteArrayOf(9)))
 
         assertThat(service.sweepOrphans()).isEqualTo(1)

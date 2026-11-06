@@ -42,12 +42,16 @@ report_dir, log_path, summary = sys.argv[1], sys.argv[2], sys.argv[3]
 files = sorted(glob.glob(os.path.join(report_dir, "**", "*.xml"), recursive=True))
 rows = []
 failures = []
+metrics = []
 for path in files:
     try:
         root = ET.parse(path).getroot()
     except Exception as exc:  # noqa: BLE001 - report parsing problems, keep going
         rows.append(("parse-error", str(exc), False))
         continue
+    for suite in [root] + list(root.iter("testsuite")):
+        text = suite.findtext("system-out") or ""
+        metrics.extend(line.strip() for line in text.splitlines() if "NFR-" in line)
     for case in root.iter("testcase"):
         name = f"{case.get('classname', '?')}.{case.get('name', '?')}"
         problems = list(case.findall("failure")) + list(case.findall("error"))
@@ -58,6 +62,8 @@ for path in files:
             rows.append((name, message, False))
         else:
             rows.append((name, "passed", True))
+        stdout = case.findtext("system-out") or ""
+        metrics.extend(line.strip() for line in stdout.splitlines() if "NFR-" in line)
 
 with open(summary, "a", encoding="utf-8") as out:
     out.write("\n### Instrumented test results\n\n")
@@ -66,9 +72,17 @@ with open(summary, "a", encoding="utf-8") as out:
     for name, detail, ok in rows:
         suffix = "" if ok else f": {detail}"
         out.write(f"- {'PASS' if ok else 'FAIL'} `{name}`{suffix}\n")
+    for metric in sorted(set(metrics)):
+        out.write(f"- METRIC `{metric}`\n")
 
 for name, message in failures:
     print(f"::error title={name}::{message}")
+for metric in sorted(set(metrics)):
+    print(f"::notice title=metric::{metric}")
+print(
+    f"::notice title=instrumented-summary::passed={sum(1 for _, _, ok in rows if ok)} "
+    f"failed={len(failures)} xml_files={len(files)}"
+)
 if not files:
     with open(log_path, encoding="utf-8", errors="replace") as handle:
         tail = handle.read().splitlines()[-30:]

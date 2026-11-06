@@ -64,6 +64,7 @@ class InferenceLatencyInstrumentedTest {
         val median = latenciesMs[latenciesMs.size / 2]
         val p95 = latenciesMs[(latenciesMs.size * 95 / 100).coerceAtMost(latenciesMs.lastIndex)]
 
+        println("NFR-1 medianMs=$median p95Ms=$p95 runs=$MEASURED_RUNS limitMs=$NFR_LIMIT_MS")
         assertThat(median).isLessThan(NFR_LIMIT_MS)
         assertThat(p95).isLessThan(NFR_LIMIT_MS)
     }

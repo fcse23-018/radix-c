@@ -47,6 +47,21 @@ jobs:
           SOILCARBON_KEY_PASSWORD: ${{ secrets.SOILCARBON_KEY_PASSWORD }}
         run: bash ./gradlew assembleRelease bundleRelease
 
+      - name: Verify release signature when a keystore is configured
+        env:
+          KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
+        run: |
+          if [ -f "$KEYSTORE_PATH" ]; then
+            APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -n 1)
+            APK=$(find app/build/outputs/apk/release -name '*.apk' | head -n 1)
+            AAB=$(find app/build/outputs/bundle/release -name '*.aab' | head -n 1)
+            "$APKSIGNER" verify --print-certs "$APK"
+            jarsigner -verify "$AAB"
+            echo "Release APK and AAB verified as signed." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::notice title=signing::No SOILCARBON_KEYSTORE_BASE64 secret; release artifacts are unsigned."
+          fi
+
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:

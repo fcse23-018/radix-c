@@ -91,6 +91,7 @@ class OfflineCapacityInstrumentedTest {
             assertThat(bytes).isNotEmpty()
             assertThat(String(bytes, Charsets.ISO_8859_1)).doesNotContain(probe)
         }
+        println("NFR-2 samples=$SAMPLE_COUNT databaseFiles=${databaseFiles.size} reopenCount=$SAMPLE_COUNT plaintextAbsent=true")
     }
 
     private fun openDatabase(passphrase: ByteArray): SoilCarbonDatabase =
