@@ -32,8 +32,6 @@ class EncryptedFileStore(
     private val rootDir: File,
     private val secretStore: KeystoreSecretStore
 ) {
-    private val random = java.security.SecureRandom()
-
     init {
         if (!rootDir.exists()) rootDir.mkdirs()
     }
@@ -42,9 +40,11 @@ class EncryptedFileStore(
         require(source.exists()) { "Source file does not exist: ${source.name}" }
         val target = resolve(relativePath).apply { parentFile?.mkdirs() }
         val digest = MessageDigest.getInstance("SHA-256")
-        val iv = ByteArray(12).also(random::nextBytes)
         val cipher = Cipher.getInstance(TRANSFORMATION)
-        cipher.init(Cipher.ENCRYPT_MODE, fileKey(), GCMParameterSpec(128, iv))
+        // The Android Keystore key requires randomized encryption, so the cipher generates the
+        // IV. Storing that IV in the envelope keeps decryption independent of the Keystore.
+        cipher.init(Cipher.ENCRYPT_MODE, fileKey())
+        val iv = cipher.iv
 
         var total = 0L
         FileInputStream(source).use { input ->
@@ -71,9 +71,9 @@ class EncryptedFileStore(
         withContext(Dispatchers.io) {
             val target = resolve(relativePath).apply { parentFile?.mkdirs() }
             val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
-            val iv = ByteArray(12).also(random::nextBytes)
             val cipher = Cipher.getInstance(TRANSFORMATION)
-            cipher.init(Cipher.ENCRYPT_MODE, fileKey(), GCMParameterSpec(128, iv))
+            cipher.init(Cipher.ENCRYPT_MODE, fileKey())
+            val iv = cipher.iv
             FileOutputStream(target).use { output ->
                 output.write(MAGIC)
                 output.write(iv.size)

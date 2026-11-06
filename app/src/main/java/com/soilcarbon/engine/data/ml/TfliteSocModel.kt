@@ -146,6 +146,11 @@ class TfliteSocModel(
     }
 
     private fun createInterpreter(bytes: ByteArray, preferGpu: Boolean): Interpreter {
+        // TFLite's Java API requires a direct buffer; ByteBuffer.wrap() is heap-backed and is
+        // rejected by every delegate.
+        val modelBuffer = ByteBuffer.allocateDirect(bytes.size)
+            .order(ByteOrder.nativeOrder())
+            .apply { put(bytes); rewind() }
         var lastFailure: Throwable? = null
         for (kind in delegateChain(preferGpu)) {
             var candidate: Delegate? = null
@@ -166,7 +171,7 @@ class TfliteSocModel(
                 }
                 candidate?.let(options::addDelegate)
                 val created = Interpreter(
-                    ByteBuffer.wrap(bytes).order(ByteOrder.nativeOrder()),
+                    modelBuffer.duplicate().order(ByteOrder.nativeOrder()),
                     options
                 )
                 delegate = candidate
@@ -176,7 +181,8 @@ class TfliteSocModel(
                 runCatching { candidate?.close() }
             }
         }
-        throw IllegalStateException("No TFLite delegate could load the model", lastFailure)
+        val reason = lastFailure?.let { ": ${it.message ?: it.javaClass.simpleName}" } ?: ""
+        throw IllegalStateException("No TFLite delegate could load the model$reason", lastFailure)
     }
 
     private fun closeInterpreterLocked() {
