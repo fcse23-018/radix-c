@@ -24,4 +24,34 @@ jobs:
           distribution: temurin
           java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
-      - run: bash ./gradlew :domain:test
+
+      # Optional release signing. Add SOILCARBON_KEYSTORE_BASE64,
+      # SOILCARBON_KEYSTORE_PASSWORD, SOILCARBON_KEY_ALIAS and SOILCARBON_KEY_PASSWORD as
+      # repository secrets. With no secrets the release artifacts are built unsigned.
+      - name: Decode release keystore (optional)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.SOILCARBON_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+          fi
+
+      - name: Unit tests
+        run: bash ./gradlew test
+
+      - name: Assemble release APK and App Bundle
+        env:
+          SOILCARBON_KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
+          SOILCARBON_KEYSTORE_PASSWORD: ${{ secrets.SOILCARBON_KEYSTORE_PASSWORD }}
+          SOILCARBON_KEY_ALIAS: ${{ secrets.SOILCARBON_KEY_ALIAS }}
+          SOILCARBON_KEY_PASSWORD: ${{ secrets.SOILCARBON_KEY_PASSWORD }}
+        run: bash ./gradlew assembleRelease bundleRelease
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: soilcarbon-release
+          path: |
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/bundle/release/*.aab
+          if-no-files-found: warn

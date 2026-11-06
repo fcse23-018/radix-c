@@ -11,6 +11,25 @@ android {
     namespace = "com.soilcarbon.engine"
     compileSdk = 35
 
+    // Release signing is supplied entirely through the environment, so no keystore or password
+    // is ever committed. Without these variables the release build stays unsigned (CI still
+    // verifies that R8 and resource shrinking succeed).
+    val releaseKeystore = System.getenv("SOILCARBON_KEYSTORE_PATH")
+        ?.takeIf { it.isNotBlank() }
+        ?.let { file(it) }
+        ?.takeIf { it.isFile }
+
+    signingConfigs {
+        if (releaseKeystore != null) {
+            create("release") {
+                storeFile = releaseKeystore
+                storePassword = System.getenv("SOILCARBON_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("SOILCARBON_KEY_ALIAS")
+                keyPassword = System.getenv("SOILCARBON_KEY_PASSWORD")
+            }
+        }
+    }
+
     defaultConfig {
         applicationId = "com.soilcarbon.engine"
         minSdk = 28
@@ -41,7 +60,13 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = if (releaseKeystore != null) signingConfigs.getByName("release") else null
         }
+    }
+
+    // Ship an Android App Bundle so Play/Gradle can split by ABI, density and language.
+    bundle {
+        abi { enableSplit = true }
     }
 
     compileOptions {
